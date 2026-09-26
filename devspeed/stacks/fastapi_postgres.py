@@ -21,18 +21,18 @@ def default_config(project_name: str) -> dict:
     }
 
 
-  def starter_files(_config: dict) -> dict[str, str]:
+def starter_files(_config: dict) -> dict[str, str]:
     return {
-      "requirements.txt": "fastapi>=0.115,<1\nuvicorn[standard]>=0.34,<1\n",
-      "main.py": '''from fastapi import FastAPI
+        "requirements.txt": "fastapi>=0.115,<1\nuvicorn[standard]>=0.34,<1\n",
+        "main.py": '''from fastapi import FastAPI
 
-  app = FastAPI(title="DevSpeed API")
+app = FastAPI(title="DevSpeed API")
 
 
-  @app.get("/")
-  def read_root():
+@app.get("/")
+def read_root():
     return {"message": "Your DevSpeed app is running"}
-  ''',
+''',
     }
 
 

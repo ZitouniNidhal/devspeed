@@ -21,33 +21,33 @@ def default_config(project_name: str) -> dict:
     }
 
 
-  def starter_files(_config: dict) -> dict[str, str]:
+def starter_files(_config: dict) -> dict[str, str]:
     return {
-      "requirements.txt": "Django>=5.1,<6\n",
-      "manage.py": '''import os
-  import sys
+        "requirements.txt": "Django>=5.1,<6\n",
+        "manage.py": '''import os
+import sys
 
 
-  if __name__ == "__main__":
+if __name__ == "__main__":
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
     from django.core.management import execute_from_command_line
     execute_from_command_line(sys.argv)
-  ''',
-      "config/__init__.py": "",
-      "config/settings.py": '''SECRET_KEY = "devspeed-local-only"
-  DEBUG = True
-  ROOT_URLCONF = "config.urls"
-  ALLOWED_HOSTS = ["*"]
-  INSTALLED_APPS = ["django.contrib.contenttypes"]
-  MIDDLEWARE = []
-  DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": "db.sqlite3"}}
-  ''',
-      "config/urls.py": '''from django.http import JsonResponse
-  from django.urls import path
+''',
+        "config/__init__.py": "",
+        "config/settings.py": '''SECRET_KEY = "devspeed-local-only"
+DEBUG = True
+ROOT_URLCONF = "config.urls"
+ALLOWED_HOSTS = ["*"]
+INSTALLED_APPS = ["django.contrib.contenttypes"]
+MIDDLEWARE = []
+DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": "db.sqlite3"}}
+''',
+        "config/urls.py": '''from django.http import JsonResponse
+from django.urls import path
 
 
-  urlpatterns = [path("", lambda request: JsonResponse({"message": "Your DevSpeed app is running"}))]
-  ''',
+urlpatterns = [path("", lambda request: JsonResponse({"message": "Your DevSpeed app is running"}))]
+''',
     }
 
 
