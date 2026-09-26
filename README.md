@@ -50,6 +50,7 @@ devspeed cleanup    # stop services, remove volumes and generated files
 | --- | --- |
 | `node-postgres-redis` | Node.js / Express app, PostgreSQL, Redis |
 | `fastapi-postgres` | FastAPI app, PostgreSQL |
+| `django-postgres` | Django web app, PostgreSQL |
 
 List templates from the CLI with `devspeed list`.
 
@@ -65,6 +66,7 @@ git add devspeed.yaml && git commit -m "Add dev environment"
 # A new teammate clones the repo and runs
 devspeed doctor
 devspeed up
+devspeed status
 ```
 
 `devspeed.yaml` is the source of truth. `docker-compose.devspeed.yml` and
@@ -102,6 +104,8 @@ use the host URLs in `.env.devspeed`; containers use service names such as
 | `devspeed doctor` | Check config and Docker before starting |
 | `devspeed up` | Generate files and start services |
 | `devspeed down` | Stop services without deleting data |
+| `devspeed status` | See the status of every service |
+| `devspeed logs [service]` | Inspect logs, optionally for one service |
 | `devspeed cleanup` | Stop services and remove generated data |
 
 ## Roadmap

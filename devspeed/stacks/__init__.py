@@ -11,10 +11,12 @@ Each stack module exposes:
 """
 from . import node_postgres_redis
 from . import fastapi_postgres
+from . import django_postgres
 
 STACKS = {
     node_postgres_redis.NAME: node_postgres_redis,
     fastapi_postgres.NAME: fastapi_postgres,
+    django_postgres.NAME: django_postgres,
 }
 
 

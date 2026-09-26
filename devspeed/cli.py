@@ -117,6 +117,31 @@ def cmd_down(_args):
     sys.exit(result.returncode)
 
 
+def _require_compose_file():
+    if not pathlib.Path(GENERATED_COMPOSE).exists():
+        print("No generated Compose file found. Run 'devspeed up' first.")
+        sys.exit(1)
+
+
+def cmd_status(_args):
+    _require_docker()
+    _require_compose_file()
+    result = subprocess.run(["docker", "compose", "-f", GENERATED_COMPOSE, "ps"])
+    sys.exit(result.returncode)
+
+
+def cmd_logs(args):
+    _require_docker()
+    _require_compose_file()
+    command = ["docker", "compose", "-f", GENERATED_COMPOSE, "logs"]
+    if args.follow:
+        command.append("--follow")
+    if args.service:
+        command.append(args.service)
+    result = subprocess.run(command)
+    sys.exit(result.returncode)
+
+
 def cmd_cleanup(_args):
     _require_docker()
     if pathlib.Path(GENERATED_COMPOSE).exists():
@@ -152,6 +177,14 @@ def build_parser():
 
     p_down = sub.add_parser("down", help="Stop containers (keeps data volumes)")
     p_down.set_defaults(func=cmd_down)
+
+    p_status = sub.add_parser("status", help="Show the status of running services")
+    p_status.set_defaults(func=cmd_status)
+
+    p_logs = sub.add_parser("logs", help="Show service logs")
+    p_logs.add_argument("service", nargs="?", help="Optional service name, such as app or postgres")
+    p_logs.add_argument("--follow", "-f", action="store_true", help="Keep streaming new log output")
+    p_logs.set_defaults(func=cmd_logs)
 
     p_cleanup = sub.add_parser("cleanup", help="Stop containers, delete volumes and generated files")
     p_cleanup.set_defaults(func=cmd_cleanup)
