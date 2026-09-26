@@ -33,6 +33,19 @@ devspeed down       # stop services, keep database data
 devspeed cleanup    # stop services, remove volumes and generated files
 ```
 
+### Windows PowerShell
+
+If PowerShell says `devspeed` is not recognized after installation, open a new
+terminal so it reloads your Python Scripts path. You can also run the launcher
+directly:
+
+```powershell
+& "$env:LOCALAPPDATA\Programs\Python\Python312\Scripts\devspeed.exe" list
+```
+
+Run `devspeed init <stack>` once in the project folder before `up`, `status`, or
+`logs`; those commands read the generated `devspeed.yaml` and Compose file.
+
 ## What you get
 
 - **One config file:** teammates get the same ports, services, and credentials.
