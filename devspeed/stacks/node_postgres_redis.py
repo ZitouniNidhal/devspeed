@@ -24,6 +24,29 @@ def default_config(project_name: str) -> dict:
     }
 
 
+def starter_files(_config: dict) -> dict[str, str]:
+    return {
+        "package.json": '''{
+  "name": "devspeed-node-app",
+  "private": true,
+  "scripts": {"dev": "node server.js"},
+  "dependencies": {"express": "^5.1.0"}
+}
+''',
+        "server.js": '''const express = require("express");
+
+const app = express();
+const port = process.env.PORT || 3000;
+
+app.get("/", (_request, response) => {
+  response.json({ message: "Your DevSpeed app is running", database: process.env.DATABASE_URL });
+});
+
+app.listen(port, "0.0.0.0", () => console.log(`API listening on ${port}`));
+''',
+    }
+
+
 def compose_yaml(config: dict) -> str:
     svc = config["services"]
     app = svc["app"]

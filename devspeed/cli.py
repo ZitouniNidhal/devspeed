@@ -37,9 +37,18 @@ def _create_config(stack_name, project_name, force=False):
 
     config = stack.default_config(project_name)
     cfg.save_config(config)
+    created_files = []
+    for filename, contents in stack.starter_files(config).items():
+        starter_path = pathlib.Path(filename)
+        if not starter_path.exists():
+            starter_path.parent.mkdir(parents=True, exist_ok=True)
+            starter_path.write_text(contents)
+            created_files.append(filename)
     print(f"\nCreated {cfg.CONFIG_FILENAME}")
     print(f"  stack   {stack.NAME}")
     print(f"  project {project_name}")
+    if created_files:
+        print(f"  starter {', '.join(created_files)}")
     print("\nNext steps:")
     print("  1. devspeed doctor   # check Docker and your config")
     print("  2. devspeed up       # start the environment")
