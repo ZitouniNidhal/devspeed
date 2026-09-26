@@ -12,10 +12,10 @@ GENERATED_ENV = ".env.devspeed"
 
 
 def cmd_list(_args):
-    print("Available stacks:\n")
+    print("\ndevspeed stacks\n")
     for name, description in list_stacks():
         print(f"  {name:<24} {description}")
-    print("\nRun 'devspeed init <stack>' inside your project folder to get started.")
+    print("\nStart one with: devspeed init <stack>")
 
 
 def cmd_init(args):
@@ -33,8 +33,12 @@ def cmd_init(args):
 
     config = stack.default_config(project_name)
     cfg.save_config(config)
-    print(f"Created {cfg.CONFIG_FILENAME} for stack '{stack.NAME}' (project: {project_name}).")
-    print("Next: review the file, then run 'devspeed up'.")
+    print(f"\nCreated {cfg.CONFIG_FILENAME}")
+    print(f"  stack   {stack.NAME}")
+    print(f"  project {project_name}")
+    print("\nNext steps:")
+    print("  1. devspeed doctor   # check Docker and your config")
+    print("  2. devspeed up       # start the environment")
 
 
 def _require_docker():
@@ -42,6 +46,36 @@ def _require_docker():
         print("Docker CLI not found. Install Docker Desktop (or the docker engine) and make sure "
               "'docker compose' works, then try again.")
         sys.exit(1)
+
+
+def cmd_doctor(_args):
+    """Check the local prerequisites before a potentially noisy `up`."""
+    checks = []
+    try:
+        config = cfg.load_config()
+        get_stack(config["stack"])
+        checks.append((True, f"{cfg.CONFIG_FILENAME} is valid ({config['stack']})"))
+    except (SystemExit, KeyError):
+        checks.append((False, f"{cfg.CONFIG_FILENAME} is missing or invalid"))
+
+    docker_path = shutil.which("docker")
+    if not docker_path:
+        checks.append((False, "Docker CLI is not installed or not on PATH"))
+    else:
+        result = subprocess.run(
+            ["docker", "compose", "version"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        checks.append((result.returncode == 0, "Docker Compose v2 is available"))
+
+    print("\ndevspeed doctor\n")
+    for passed, message in checks:
+        print(f"  [{'OK' if passed else '!!'}] {message}")
+    if not all(passed for passed, _ in checks):
+        print("\nFix the items marked !!, then run devspeed doctor again.")
+        sys.exit(1)
+    print("\nReady. Run devspeed up to start your environment.")
 
 
 def _generate_files(config: dict):
@@ -79,13 +113,16 @@ def cmd_down(_args):
     if not pathlib.Path(GENERATED_COMPOSE).exists():
         print("Nothing to stop — no generated compose file found. Did you run 'devspeed up'?")
         sys.exit(1)
-    subprocess.run(["docker", "compose", "-f", GENERATED_COMPOSE, "down"])
+    result = subprocess.run(["docker", "compose", "-f", GENERATED_COMPOSE, "down"])
+    sys.exit(result.returncode)
 
 
 def cmd_cleanup(_args):
     _require_docker()
     if pathlib.Path(GENERATED_COMPOSE).exists():
-        subprocess.run(["docker", "compose", "-f", GENERATED_COMPOSE, "down", "-v"])
+        result = subprocess.run(["docker", "compose", "-f", GENERATED_COMPOSE, "down", "-v"])
+        if result.returncode != 0:
+            sys.exit(result.returncode)
         pathlib.Path(GENERATED_COMPOSE).unlink(missing_ok=True)
     pathlib.Path(GENERATED_ENV).unlink(missing_ok=True)
     print("Containers, volumes, and generated files removed. devspeed.yaml is left untouched.")
@@ -100,6 +137,9 @@ def build_parser():
 
     p_list = sub.add_parser("list", help="List available stack templates")
     p_list.set_defaults(func=cmd_list)
+
+    p_doctor = sub.add_parser("doctor", help="Check Docker and the current project config")
+    p_doctor.set_defaults(func=cmd_doctor)
 
     p_init = sub.add_parser("init", help="Create a devspeed.yaml for a stack in this directory")
     p_init.add_argument("stack", help="Stack template name (see 'devspeed list')")

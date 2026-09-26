@@ -1,53 +1,129 @@
 # devspeed
 
-A single CLI that spins up a local dev environment (app + databases) from one
-config file, backed by Docker Compose so nothing touches your machine's global
-installs.
+**The fastest way to make a local development environment reproducible.**
+
+New project setup should take one minute, not one afternoon. `devspeed` turns a
+small, shareable YAML file into a ready-to-run Docker Compose environment for
+your app and its dependencies.
+
+```text
+devspeed.yaml  ->  devspeed up  ->  app + databases + useful connection URLs
+```
+
+No global installs. No copy-pasted Compose files. No "works on my machine"
+setup ritual.
+
+## Quick start
+
+Requirements: Python 3.9+ and Docker Desktop with Compose v2.
 
 ```bash
 pip install -e .
 devspeed list
-devspeed init node-postgres-redis --name myapp
+devspeed init node-postgres-redis --name my-api
+devspeed doctor
 devspeed up
-# ...work...
-devspeed down       # stop, keep data
-devspeed cleanup    # stop, wipe volumes + generated files
 ```
 
-## How it works
+Your project now has a `devspeed.yaml` that can be committed to git. Generated
+runtime files are kept separate:
 
-- `devspeed init <stack>` writes a `devspeed.yaml` describing your project
-  (ports, service names, credentials) for the chosen stack.
-- `devspeed up` reads that file, generates a `docker-compose.devspeed.yml` and
-  `.env.devspeed`, and runs `docker compose up -d`.
-- `devspeed down` / `devspeed cleanup` tear things down.
+```bash
+devspeed down       # stop services, keep database data
+devspeed cleanup    # stop services, remove volumes and generated files
+```
 
-Generated files (`docker-compose.devspeed.yml`, `.env.devspeed`) are meant to
-be gitignored — `devspeed.yaml` is the thing you commit and share with your
-team.
+## What you get
 
-## Available stacks (MVP)
+- **One config file:** teammates get the same ports, services, and credentials.
+- **Fast onboarding:** generate a stack in seconds and start it with one command.
+- **Isolated dependencies:** databases and caches run in containers, not in a
+  developer's global machine.
+- **Useful defaults:** health checks, hot reload, volumes, and local connection
+  URLs are generated for you.
+- **A clear escape hatch:** the generated Compose file is readable and can be
+  inspected or extended when your project grows.
 
-- `node-postgres-redis` — Node/Express + Postgres + Redis
-- `fastapi-postgres` — Python FastAPI + Postgres
+## Available stacks
 
-## Adding a new stack
+| Stack | Includes |
+| --- | --- |
+| `node-postgres-redis` | Node.js / Express app, PostgreSQL, Redis |
+| `fastapi-postgres` | FastAPI app, PostgreSQL |
 
-Add a module to `devspeed/stacks/` exposing `NAME`, `DESCRIPTION`,
-`default_config()`, `compose_yaml()`, `env_file()`, and `post_up_hints()`,
-then register it in `devspeed/stacks/__init__.py`. See
-`node_postgres_redis.py` for the shape.
+List templates from the CLI with `devspeed list`.
 
-## What's deliberately NOT in this MVP
+## The team workflow
 
-- No bare-metal (non-Docker) install path yet — this version is
-  container-only. A local-install mode is a bigger, riskier piece of work
-  (cross-platform package managers, PATH management) and shouldn't block
-  getting the container path in front of users first.
-- No interactive wizard — `init` takes a stack name directly.
-- No auto-detection of "what stack is this repo" — you say what you want.
+```bash
+# One developer creates the project recipe
+devspeed init fastapi-postgres --name billing-api
 
-## Requirements
+# Everyone reviews and commits this file
+git add devspeed.yaml && git commit -m "Add dev environment"
 
-- Python 3.9+
+# A new teammate clones the repo and runs
+devspeed doctor
+devspeed up
+```
+
+`devspeed.yaml` is the source of truth. `docker-compose.devspeed.yml` and
+`.env.devspeed` are generated locally and should normally be gitignored.
+
+## Example config
+
+```yaml
+project: my-api
+stack: node-postgres-redis
+services:
+  app:
+    port: 3000
+    node_version: "22"
+  postgres:
+    port: 5432
+    db: my_api
+    user: devspeed
+    password: devspeed
+  redis:
+    port: 6379
+```
+
+The generated app container mounts your project directory, installs its
+dependencies, and runs the stack's development command. Your application can
+use the host URLs in `.env.devspeed`; containers use service names such as
+`postgres` and `redis`.
+
+## CLI reference
+
+| Command | Purpose |
+| --- | --- |
+| `devspeed list` | Browse available stack templates |
+| `devspeed init <stack>` | Create a shareable `devspeed.yaml` |
+| `devspeed doctor` | Check config and Docker before starting |
+| `devspeed up` | Generate files and start services |
+| `devspeed down` | Stop services without deleting data |
+| `devspeed cleanup` | Stop services and remove generated data |
+
+## Roadmap
+
+The first release is intentionally focused on a reliable container workflow.
+The next useful steps are an interactive project wizard, more stack templates,
+configurable lifecycle commands, and optional local-install support for teams
+that cannot use Docker.
+
+## Add a stack
+
+Create a module in `devspeed/stacks/` exposing `NAME`, `DESCRIPTION`,
+`default_config()`, `compose_yaml()`, `env_file()`, and `post_up_hints()`, then
+register it in `devspeed/stacks/__init__.py`.
+
+## Contributing
+
+Small, practical improvements are welcome. Keep generated files out of commits,
+make stack defaults safe for a fresh clone, and test the CLI from a clean
+directory before opening a pull request.
+
+## License
+
+MIT
 - Docker with Compose v2 (`docker compose ...`, not the old `docker-compose`)
