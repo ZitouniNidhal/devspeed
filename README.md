@@ -59,6 +59,8 @@ Run `devspeed init <stack>` once in the project folder before `up`, `status`, or
   developer's global machine.
 - **Useful defaults:** health checks, hot reload, volumes, and local connection
   URLs are generated for you.
+- **Runnable starters:** a fresh `init` creates a tiny app when the expected
+  entry files do not exist, without overwriting your work.
 - **A clear escape hatch:** the generated Compose file is readable and can be
   inspected or extended when your project grows.
 
@@ -112,6 +114,10 @@ The generated app container mounts your project directory, installs its
 dependencies, and runs the stack's development command. Your application can
 use the host URLs in `.env.devspeed`; containers use service names such as
 `postgres` and `redis`.
+
+Starter files are deliberately small and safe to replace. They give a new
+project a working first request immediately, while existing files are always
+left untouched.
 
 ## CLI reference
 

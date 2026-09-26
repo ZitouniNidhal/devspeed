@@ -23,7 +23,7 @@ def default_config(project_name: str) -> dict:
 
 def starter_files(_config: dict) -> dict[str, str]:
     return {
-        "requirements.txt": "Django>=5.1,<6\n",
+        "requirements.txt": "Django>=5.1,<6\npsycopg[binary]>=3.2,<4\n",
         "manage.py": '''import os
 import sys
 
@@ -34,13 +34,22 @@ if __name__ == "__main__":
     execute_from_command_line(sys.argv)
 ''',
         "config/__init__.py": "",
-        "config/settings.py": '''SECRET_KEY = "devspeed-local-only"
+        "config/settings.py": '''import os
+
+      SECRET_KEY = "devspeed-local-only"
 DEBUG = True
 ROOT_URLCONF = "config.urls"
 ALLOWED_HOSTS = ["*"]
 INSTALLED_APPS = ["django.contrib.contenttypes"]
 MIDDLEWARE = []
-DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": "db.sqlite3"}}
+      DATABASES = {"default": {
+          "ENGINE": "django.db.backends.postgresql",
+          "NAME": os.getenv("POSTGRES_DB", "devspeed"),
+          "USER": os.getenv("POSTGRES_USER", "devspeed"),
+          "PASSWORD": os.getenv("POSTGRES_PASSWORD", "devspeed"),
+          "HOST": os.getenv("POSTGRES_HOST", "postgres"),
+          "PORT": "5432",
+      }}
 ''',
         "config/urls.py": '''from django.http import JsonResponse
 from django.urls import path
@@ -66,11 +75,15 @@ services:
     working_dir: /app
     volumes:
       - ./:/app
-    command: sh -c "pip install --no-cache-dir -r requirements.txt && python manage.py runserver 0.0.0.0:{app['port']}"
+    command: sh -c "pip install --no-cache-dir -r requirements.txt && python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:{app['port']}"
     ports:
       - "{app['port']}:{app['port']}"
     environment:
       - DATABASE_URL=postgres://{pg['user']}:{pg['password']}@postgres:5432/{pg['db']}
+      - POSTGRES_DB={pg['db']}
+      - POSTGRES_USER={pg['user']}
+      - POSTGRES_PASSWORD={pg['password']}
+      - POSTGRES_HOST=postgres
     depends_on:
       postgres:
         condition: service_healthy
