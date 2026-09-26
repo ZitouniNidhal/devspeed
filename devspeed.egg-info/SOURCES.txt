@@ -1,0 +1,15 @@
+README.md
+pyproject.toml
+devspeed/__init__.py
+devspeed/cli.py
+devspeed/config.py
+devspeed.egg-info/PKG-INFO
+devspeed.egg-info/SOURCES.txt
+devspeed.egg-info/dependency_links.txt
+devspeed.egg-info/entry_points.txt
+devspeed.egg-info/requires.txt
+devspeed.egg-info/top_level.txt
+devspeed/stacks/__init__.py
+devspeed/stacks/django_postgres.py
+devspeed/stacks/fastapi_postgres.py
+devspeed/stacks/node_postgres_redis.py
