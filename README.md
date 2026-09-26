@@ -19,10 +19,15 @@ Requirements: Python 3.9+ and Docker Desktop with Compose v2.
 
 ```bash
 pip install -e .
-devspeed list
-devspeed init node-postgres-redis --name my-api
+devspeed create
 devspeed doctor
 devspeed up
+```
+
+Prefer explicit, scriptable setup? Use `devspeed init <stack>` instead:
+
+```bash
+devspeed init node-postgres-redis --name my-api
 ```
 
 Your project now has a `devspeed.yaml` that can be committed to git. Generated
@@ -114,6 +119,7 @@ use the host URLs in `.env.devspeed`; containers use service names such as
 | --- | --- |
 | `devspeed list` | Browse available stack templates |
 | `devspeed init <stack>` | Create a shareable `devspeed.yaml` |
+| `devspeed create` | Choose a stack with an interactive wizard |
 | `devspeed doctor` | Check config and Docker before starting |
 | `devspeed up` | Generate files and start services |
 | `devspeed down` | Stop services without deleting data |
@@ -124,9 +130,9 @@ use the host URLs in `.env.devspeed`; containers use service names such as
 ## Roadmap
 
 The first release is intentionally focused on a reliable container workflow.
-The next useful steps are an interactive project wizard, more stack templates,
-configurable lifecycle commands, and optional local-install support for teams
-that cannot use Docker.
+Next up: more stack templates, configurable lifecycle commands, generated
+`.env.example` files, and optional local-install support for teams that cannot
+use Docker.
 
 ## Add a stack
 
@@ -143,4 +149,3 @@ directory before opening a pull request.
 ## License
 
 MIT
-- Docker with Compose v2 (`docker compose ...`, not the old `docker-compose`)

@@ -20,14 +20,18 @@ def cmd_list(_args):
 
 def cmd_init(args):
     project_name = args.project_name or pathlib.Path.cwd().name
+    _create_config(args.stack, project_name, args.force)
+
+
+def _create_config(stack_name, project_name, force=False):
     try:
-        stack = get_stack(args.stack)
+        stack = get_stack(stack_name)
     except KeyError as e:
         print(f"Error: {e}")
         sys.exit(1)
 
     path = cfg.config_path()
-    if path.exists() and not args.force:
+    if path.exists() and not force:
         print(f"{cfg.CONFIG_FILENAME} already exists. Use --force to overwrite.")
         sys.exit(1)
 
@@ -39,6 +43,29 @@ def cmd_init(args):
     print("\nNext steps:")
     print("  1. devspeed doctor   # check Docker and your config")
     print("  2. devspeed up       # start the environment")
+
+
+def cmd_create(args):
+    print("\ndevspeed create\n")
+    print("Choose a stack:")
+    stacks = list_stacks()
+    for index, (_, description) in enumerate(stacks, start=1):
+        print(f"  {index}. {description}")
+
+    try:
+        selection = input("\nStack [1]: ").strip() or "1"
+        stack_index = int(selection) - 1
+        stack_name = stacks[stack_index][0]
+    except (ValueError, EOFError, IndexError):
+        print("Please choose one of the numbered stacks.")
+        sys.exit(1)
+
+    default_name = pathlib.Path.cwd().name
+    try:
+        project_name = input(f"Project name [{default_name}]: ").strip() or default_name
+    except EOFError:
+        project_name = default_name
+    _create_config(stack_name, args.project_name or project_name, args.force)
 
 
 def _require_docker():
@@ -171,6 +198,11 @@ def build_parser():
     p_init.add_argument("--name", dest="project_name", default=None, help="Project name (default: folder name)")
     p_init.add_argument("--force", action="store_true", help="Overwrite an existing devspeed.yaml")
     p_init.set_defaults(func=cmd_init)
+
+    p_create = sub.add_parser("create", help="Interactively create a project environment")
+    p_create.add_argument("--name", dest="project_name", default=None, help="Project name (default: folder name)")
+    p_create.add_argument("--force", action="store_true", help="Overwrite an existing devspeed.yaml")
+    p_create.set_defaults(func=cmd_create)
 
     p_up = sub.add_parser("up", help="Generate compose files from devspeed.yaml and start everything")
     p_up.set_defaults(func=cmd_up)
