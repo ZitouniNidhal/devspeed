@@ -74,24 +74,7 @@ services:
       postgres:
         condition: service_healthy
 
-  postgres:
-    image: postgres:16-alpine
-    ports:
-      - "{pg['port']}:5432"
-    environment:
-      - POSTGRES_DB={pg['db']}
-      - POSTGRES_USER={pg['user']}
-      - POSTGRES_PASSWORD={pg['password']}
-    volumes:
-      - {project}_pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U {pg['user']}"]
-      interval: 3s
-      timeout: 3s
-      retries: 10
-
-volumes:
-  {postgres.split('volumes:', 1)[1]}
+{postgres}
 """
 
 
