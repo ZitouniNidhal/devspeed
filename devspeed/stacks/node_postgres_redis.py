@@ -1,11 +1,16 @@
+from typing import Any
+
+from .common import lifecycle_command
+
 NAME = "node-postgres-redis"
 DESCRIPTION = "Node.js/Express API + Postgres + Redis"
 
 
-def default_config(project_name: str) -> dict:
+def default_config(project_name: str) -> dict[str, Any]:
     return {
         "project": project_name,
         "stack": NAME,
+        "lifecycle": {"install": "npm install", "dev": "npm run dev"},
         "services": {
             "app": {
                 "port": 3000,
@@ -24,7 +29,7 @@ def default_config(project_name: str) -> dict:
     }
 
 
-def starter_files(_config: dict) -> dict[str, str]:
+def starter_files(_config: dict[str, Any]) -> dict[str, str]:
     return {
         "package.json": '''{
   "name": "devspeed-node-app",
@@ -47,12 +52,13 @@ app.listen(port, "0.0.0.0", () => console.log(`API listening on ${port}`));
     }
 
 
-def compose_yaml(config: dict) -> str:
+def compose_yaml(config: dict[str, Any]) -> str:
     svc = config["services"]
     app = svc["app"]
     pg = svc["postgres"]
     redis = svc["redis"]
     project = config["project"]
+    app_command = lifecycle_command(config, "npm install", "npm run dev")
 
     return f"""\
 name: {project}
@@ -63,7 +69,7 @@ services:
     working_dir: /app
     volumes:
       - ./:/app
-    command: sh -c "npm install && npm run dev"
+    command: {app_command}
     ports:
       - "{app['port']}:{app['port']}"
     environment:
@@ -102,7 +108,7 @@ volumes:
 """
 
 
-def env_file(config: dict) -> str:
+def env_file(config: dict[str, Any]) -> str:
     svc = config["services"]
     pg = svc["postgres"]
     app = svc["app"]
@@ -113,7 +119,7 @@ REDIS_URL=redis://localhost:{svc['redis']['port']}
 """
 
 
-def post_up_hints(config: dict) -> list[str]:
+def post_up_hints(config: dict[str, Any]) -> list[str]:
     app_port = config["services"]["app"]["port"]
     return [
         f"App container will run 'npm install && npm run dev' — make sure package.json has a 'dev' script.",

@@ -1,11 +1,19 @@
+from typing import Any
+
+from .common import lifecycle_command
+
 NAME = "django-postgres"
 DESCRIPTION = "Django web app + Postgres"
 
 
-def default_config(project_name: str) -> dict:
+def default_config(project_name: str) -> dict[str, Any]:
     return {
         "project": project_name,
         "stack": NAME,
+        "lifecycle": {
+          "install": "pip install --no-cache-dir -r requirements.txt",
+          "dev": "python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8000",
+        },
         "services": {
             "app": {
                 "port": 8000,
@@ -21,7 +29,7 @@ def default_config(project_name: str) -> dict:
     }
 
 
-def starter_files(_config: dict) -> dict[str, str]:
+def starter_files(_config: dict[str, Any]) -> dict[str, str]:
     return {
         "requirements.txt": "Django>=5.1,<6\npsycopg[binary]>=3.2,<4\n",
         "manage.py": '''import os
@@ -36,20 +44,20 @@ if __name__ == "__main__":
         "config/__init__.py": "",
         "config/settings.py": '''import os
 
-      SECRET_KEY = "devspeed-local-only"
+    SECRET_KEY = "devspeed-local-only"
 DEBUG = True
 ROOT_URLCONF = "config.urls"
 ALLOWED_HOSTS = ["*"]
 INSTALLED_APPS = ["django.contrib.contenttypes"]
 MIDDLEWARE = []
-      DATABASES = {"default": {
-          "ENGINE": "django.db.backends.postgresql",
-          "NAME": os.getenv("POSTGRES_DB", "devspeed"),
-          "USER": os.getenv("POSTGRES_USER", "devspeed"),
-          "PASSWORD": os.getenv("POSTGRES_PASSWORD", "devspeed"),
-          "HOST": os.getenv("POSTGRES_HOST", "postgres"),
-          "PORT": "5432",
-      }}
+    DATABASES = {"default": {
+      "ENGINE": "django.db.backends.postgresql",
+      "NAME": os.getenv("POSTGRES_DB", "devspeed"),
+      "USER": os.getenv("POSTGRES_USER", "devspeed"),
+      "PASSWORD": os.getenv("POSTGRES_PASSWORD", "devspeed"),
+      "HOST": os.getenv("POSTGRES_HOST", "postgres"),
+      "PORT": "5432",
+    }}
 ''',
         "config/urls.py": '''from django.http import JsonResponse
 from django.urls import path
@@ -60,11 +68,16 @@ urlpatterns = [path("", lambda request: JsonResponse({"message": "Your DevSpeed 
     }
 
 
-def compose_yaml(config: dict) -> str:
+def compose_yaml(config: dict[str, Any]) -> str:
     svc = config["services"]
     app = svc["app"]
     pg = svc["postgres"]
     project = config["project"]
+    app_command = lifecycle_command(
+      config,
+      "pip install --no-cache-dir -r requirements.txt",
+      f"python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:{app['port']}",
+    )
 
     return f"""\
 name: {project}
@@ -75,7 +88,7 @@ services:
     working_dir: /app
     volumes:
       - ./:/app
-    command: sh -c "pip install --no-cache-dir -r requirements.txt && python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:{app['port']}"
+    command: {app_command}
     ports:
       - "{app['port']}:{app['port']}"
     environment:
@@ -109,12 +122,12 @@ volumes:
 """
 
 
-def env_file(config: dict) -> str:
+def env_file(config: dict[str, Any]) -> str:
     pg = config["services"]["postgres"]
     return f"DATABASE_URL=postgres://{pg['user']}:{pg['password']}@localhost:{pg['port']}/{pg['db']}\n"
 
 
-def post_up_hints(config: dict) -> list[str]:
+def post_up_hints(config: dict[str, Any]) -> list[str]:
     app_port = config["services"]["app"]["port"]
     return [
         "App container installs requirements.txt and runs Django's development server.",

@@ -60,7 +60,7 @@ def _create_config(
         created_files.append(GENERATED_ENV_EXAMPLE)
     if dry_run:
         print("[dry-run] no files were written")
-    print(f"\nCreated {cfg.CONFIG_FILENAME}")
+    print(f"\n{'Previewed' if dry_run else 'Created'} {cfg.CONFIG_FILENAME}")
     print(f"  stack   {stack.NAME}")
     print(f"  project {project_name}")
     if created_files:

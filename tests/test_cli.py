@@ -71,7 +71,7 @@ class CliTests(unittest.TestCase):
                     "devspeed.cli.subprocess.run", return_value=completed
                 ) as run:
                     cli.cmd_up(Namespace(dry_run=False))
-                self.assertEqual(run.call_args.args[0][-3:], ["up", "-d"])
+                self.assertEqual(run.call_args.args[0][-2:], ["up", "-d"])
                 self.assertTrue(Path(cli.GENERATED_COMPOSE).exists())
                 self.assertTrue(Path(cli.GENERATED_ENV_EXAMPLE).exists())
                 self.assertIn("<password>", Path(cli.GENERATED_ENV_EXAMPLE).read_text())
@@ -92,9 +92,11 @@ class CliTests(unittest.TestCase):
                         cli.cmd_down(Namespace())
                     with self.assertRaises(SystemExit) as status_exit:
                         cli.cmd_status(Namespace())
-                    cli.cmd_logs(Namespace(follow=True, service="app"))
+                    with self.assertRaises(SystemExit) as logs_exit:
+                        cli.cmd_logs(Namespace(follow=True, service="app"))
                 self.assertEqual(down_exit.exception.code, 0)
                 self.assertEqual(status_exit.exception.code, 0)
+                self.assertEqual(logs_exit.exception.code, 0)
                 self.assertEqual(run.call_count, 3)
                 self.assertEqual(run.call_args.args[0][-2:], ["--follow", "app"])
             finally:
