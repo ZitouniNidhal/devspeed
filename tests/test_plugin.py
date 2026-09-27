@@ -1,0 +1,56 @@
+import unittest
+from typing import Any
+from unittest.mock import patch
+
+from devspeed.plugin import (
+    ENTRY_POINT_GROUP,
+    PLUGIN_API_VERSION,
+    PluginError,
+    PluginRegistry,
+    StackPlugin,
+    builtin_registry,
+)
+
+
+class ExamplePlugin(StackPlugin):
+    name = "example"
+    description = "Example third-party stack"
+    api_version = PLUGIN_API_VERSION
+
+    def default_config(self, project_name: str) -> dict[str, Any]:
+        return {"project": project_name, "stack": self.name, "services": {}}
+
+    def compose_yaml(self, config: dict[str, Any]) -> str:
+        return "services: {}"
+
+    def env_file(self, config: dict[str, Any]) -> str:
+        return ""
+
+    def post_up_hints(self, config: dict[str, Any]) -> list[str]:
+        return []
+
+
+class PluginTests(unittest.TestCase):
+    def test_builtin_registry_exposes_stack_plugins(self):
+        registry = builtin_registry()
+        self.assertEqual(registry.get("fastapi-postgres").name, "fastapi-postgres")
+        self.assertEqual(registry.errors, [])
+
+    def test_registry_discovers_entry_point_plugin(self):
+        point = type("Point", (), {"name": "example", "load": lambda _self: ExamplePlugin()})()
+        with patch("devspeed.plugin._entry_points", return_value=[point]):
+            registry = PluginRegistry().discover()
+        self.assertEqual(registry.get("example").description, "Example third-party stack")
+
+    def test_registry_rejects_incompatible_api(self):
+        plugin = ExamplePlugin()
+        plugin.api_version = "2.0"
+        with self.assertRaises(PluginError):
+            PluginRegistry().register(plugin)
+
+    def test_entry_point_group_is_stable(self):
+        self.assertEqual(ENTRY_POINT_GROUP, "devspeed.stacks")
+
+
+if __name__ == "__main__":
+    unittest.main()
