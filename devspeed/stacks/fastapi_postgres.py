@@ -11,8 +11,8 @@ def default_config(project_name: str) -> dict[str, Any]:
         "project": project_name,
         "stack": NAME,
         "lifecycle": {
-          "install": "pip install --no-cache-dir -r requirements.txt",
-          "dev": "uvicorn main:app --host 0.0.0.0 --port 8000 --reload",
+            "install": "pip install --no-cache-dir -r requirements.txt",
+            "dev": "uvicorn main:app --host 0.0.0.0 --port 8000 --reload",
         },
         "services": {
             "app": {
@@ -32,7 +32,7 @@ def default_config(project_name: str) -> dict[str, Any]:
 def starter_files(_config: dict[str, Any]) -> dict[str, str]:
     return {
         "requirements.txt": "fastapi>=0.115,<1\nuvicorn[standard]>=0.34,<1\n",
-        "main.py": '''from fastapi import FastAPI
+        "main.py": """from fastapi import FastAPI
 
 app = FastAPI(title="DevSpeed API")
 
@@ -40,7 +40,7 @@ app = FastAPI(title="DevSpeed API")
 @app.get("/")
 def read_root():
     return {"message": "Your DevSpeed app is running"}
-''',
+""",
     }
 
 
@@ -51,9 +51,9 @@ def compose_yaml(config: dict[str, Any]) -> str:
     project = config["project"]
 
     app_command = lifecycle_command(
-      config,
-      "pip install --no-cache-dir -r requirements.txt",
-      f"uvicorn main:app --host 0.0.0.0 --port {app['port']} --reload",
+        config,
+        "pip install --no-cache-dir -r requirements.txt",
+        f"uvicorn main:app --host 0.0.0.0 --port {app['port']} --reload",
     )
     postgres = postgres_service_yaml(pg, project, database_url=False)
     return f"""\

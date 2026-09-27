@@ -31,14 +31,14 @@ def default_config(project_name: str) -> dict[str, Any]:
 
 def starter_files(_config: dict[str, Any]) -> dict[str, str]:
     return {
-        "package.json": '''{
+        "package.json": """{
   "name": "devspeed-node-app",
   "private": true,
   "scripts": {"dev": "node server.js"},
   "dependencies": {"express": "^5.1.0"}
 }
-''',
-        "server.js": '''const express = require("express");
+""",
+        "server.js": """const express = require("express");
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -48,7 +48,7 @@ app.get("/", (_request, response) => {
 });
 
 app.listen(port, "0.0.0.0", () => console.log(`API listening on ${port}`));
-''',
+""",
     }
 
 

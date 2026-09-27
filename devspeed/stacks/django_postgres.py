@@ -11,8 +11,8 @@ def default_config(project_name: str) -> dict[str, Any]:
         "project": project_name,
         "stack": NAME,
         "lifecycle": {
-          "install": "pip install --no-cache-dir -r requirements.txt",
-          "dev": "python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8000",
+            "install": "pip install --no-cache-dir -r requirements.txt",
+            "dev": "python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8000",
         },
         "services": {
             "app": {
@@ -32,7 +32,7 @@ def default_config(project_name: str) -> dict[str, Any]:
 def starter_files(_config: dict[str, Any]) -> dict[str, str]:
     return {
         "requirements.txt": "Django>=5.1,<6\npsycopg[binary]>=3.2,<4\n",
-        "manage.py": '''import os
+        "manage.py": """import os
 import sys
 
 
@@ -40,9 +40,9 @@ if __name__ == "__main__":
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
     from django.core.management import execute_from_command_line
     execute_from_command_line(sys.argv)
-''',
+""",
         "config/__init__.py": "",
-        "config/settings.py": '''import os
+        "config/settings.py": """import os
 
     SECRET_KEY = "devspeed-local-only"
 DEBUG = True
@@ -58,13 +58,13 @@ MIDDLEWARE = []
       "HOST": os.getenv("POSTGRES_HOST", "postgres"),
       "PORT": "5432",
     }}
-''',
-        "config/urls.py": '''from django.http import JsonResponse
+""",
+        "config/urls.py": """from django.http import JsonResponse
 from django.urls import path
 
 
 urlpatterns = [path("", lambda request: JsonResponse({"message": "Your DevSpeed app is running"}))]
-''',
+""",
     }
 
 
@@ -74,9 +74,9 @@ def compose_yaml(config: dict[str, Any]) -> str:
     pg = svc["postgres"]
     project = config["project"]
     app_command = lifecycle_command(
-      config,
-      "pip install --no-cache-dir -r requirements.txt",
-      f"python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:{app['port']}",
+        config,
+        "pip install --no-cache-dir -r requirements.txt",
+        f"python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:{app['port']}",
     )
 
     return f"""\
@@ -124,7 +124,9 @@ volumes:
 
 def env_file(config: dict[str, Any]) -> str:
     pg = config["services"]["postgres"]
-    return f"DATABASE_URL=postgres://{pg['user']}:{pg['password']}@localhost:{pg['port']}/{pg['db']}\n"
+    return (
+        f"DATABASE_URL=postgres://{pg['user']}:{pg['password']}@localhost:{pg['port']}/{pg['db']}\n"
+    )
 
 
 def post_up_hints(config: dict[str, Any]) -> list[str]:

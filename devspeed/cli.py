@@ -172,7 +172,9 @@ def cmd_up(args: argparse.Namespace) -> None:
         print("Check that Docker Desktop is running and that the configured host ports are free.")
         sys.exit(result.returncode)
 
-    print(f"\nCopied service URLs into {GENERATED_ENV} — copy the values you need into your app's .env.")
+    print(
+        f"\nCopied service URLs into {GENERATED_ENV} — copy the values you need into your app's .env."
+    )
     print("\nUp and running. A few notes:")
     for hint in stack.post_up_hints(config):
         print(f"  - {hint}")
@@ -240,19 +242,31 @@ def build_parser():
 
     p_init = sub.add_parser("init", help="Create a devspeed.yaml for a stack in this directory")
     p_init.add_argument("stack", help="Stack template name (see 'devspeed list')")
-    p_init.add_argument("--name", dest="project_name", default=None, help="Project name (default: folder name)")
+    p_init.add_argument(
+        "--name", dest="project_name", default=None, help="Project name (default: folder name)"
+    )
     p_init.add_argument("--force", action="store_true", help="Overwrite an existing devspeed.yaml")
     p_init.add_argument("--dry-run", action="store_true", help="Preview files without writing them")
     p_init.set_defaults(func=cmd_init)
 
     p_create = sub.add_parser("create", help="Interactively create a project environment")
-    p_create.add_argument("--name", dest="project_name", default=None, help="Project name (default: folder name)")
-    p_create.add_argument("--force", action="store_true", help="Overwrite an existing devspeed.yaml")
-    p_create.add_argument("--dry-run", action="store_true", help="Preview files without writing them")
+    p_create.add_argument(
+        "--name", dest="project_name", default=None, help="Project name (default: folder name)"
+    )
+    p_create.add_argument(
+        "--force", action="store_true", help="Overwrite an existing devspeed.yaml"
+    )
+    p_create.add_argument(
+        "--dry-run", action="store_true", help="Preview files without writing them"
+    )
     p_create.set_defaults(func=cmd_create)
 
-    p_up = sub.add_parser("up", help="Generate compose files from devspeed.yaml and start everything")
-    p_up.add_argument("--dry-run", action="store_true", help="Preview generated files without starting Docker")
+    p_up = sub.add_parser(
+        "up", help="Generate compose files from devspeed.yaml and start everything"
+    )
+    p_up.add_argument(
+        "--dry-run", action="store_true", help="Preview generated files without starting Docker"
+    )
     p_up.set_defaults(func=cmd_up)
 
     p_down = sub.add_parser("down", help="Stop containers (keeps data volumes)")
@@ -266,7 +280,9 @@ def build_parser():
     p_logs.add_argument("--follow", "-f", action="store_true", help="Keep streaming new log output")
     p_logs.set_defaults(func=cmd_logs)
 
-    p_cleanup = sub.add_parser("cleanup", help="Stop containers, delete volumes and generated files")
+    p_cleanup = sub.add_parser(
+        "cleanup", help="Stop containers, delete volumes and generated files"
+    )
     p_cleanup.set_defaults(func=cmd_cleanup)
 
     return parser

@@ -31,7 +31,7 @@ def default_config(project_name: str) -> dict[str, Any]:
 def starter_files(_config: dict[str, Any]) -> dict[str, str]:
     return {
         "requirements.txt": "Flask>=3.1,<4\npsycopg[binary]>=3.2,<4\n",
-        "app.py": '''from flask import Flask, jsonify
+        "app.py": """from flask import Flask, jsonify
 
 app = Flask(__name__)
 
@@ -39,7 +39,7 @@ app = Flask(__name__)
 @app.get("/")
 def read_root():
     return jsonify(message="Your DevSpeed app is running")
-''',
+""",
     }
 
 

@@ -10,6 +10,7 @@ Each stack module exposes:
   - post_up_hints(config: dict) -> list[str]
     - starter_files(config: dict) -> dict[str, str]
 """
+
 from . import node_postgres_redis
 from . import fastapi_postgres
 from . import django_postgres

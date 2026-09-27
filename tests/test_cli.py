@@ -67,9 +67,10 @@ class CliTests(unittest.TestCase):
             try:
                 config.save_config(cli.get_stack("fastapi-postgres").default_config("demo"))
                 completed = type("Completed", (), {"returncode": 0})()
-                with patch("devspeed.cli.shutil.which", return_value="docker"), patch(
-                    "devspeed.cli.subprocess.run", return_value=completed
-                ) as run:
+                with (
+                    patch("devspeed.cli.shutil.which", return_value="docker"),
+                    patch("devspeed.cli.subprocess.run", return_value=completed) as run,
+                ):
                     cli.cmd_up(Namespace(dry_run=False))
                 self.assertEqual(run.call_args.args[0][-2:], ["up", "-d"])
                 self.assertTrue(Path(cli.GENERATED_COMPOSE).exists())
@@ -85,9 +86,10 @@ class CliTests(unittest.TestCase):
             try:
                 Path(cli.GENERATED_COMPOSE).write_text("services: {}\n")
                 completed = type("Completed", (), {"returncode": 0})()
-                with patch("devspeed.cli.shutil.which", return_value="docker"), patch(
-                    "devspeed.cli.subprocess.run", return_value=completed
-                ) as run:
+                with (
+                    patch("devspeed.cli.shutil.which", return_value="docker"),
+                    patch("devspeed.cli.subprocess.run", return_value=completed) as run,
+                ):
                     with self.assertRaises(SystemExit) as down_exit:
                         cli.cmd_down(Namespace())
                     with self.assertRaises(SystemExit) as status_exit:

@@ -55,9 +55,7 @@ def validate_config(config: Any) -> list[str]:
     return errors
 
 
-def save_config(
-    config: dict[str, Any], directory: Optional[pathlib.Path] = None
-) -> pathlib.Path:
+def save_config(config: dict[str, Any], directory: Optional[pathlib.Path] = None) -> pathlib.Path:
     path = config_path(directory)
     with path.open("w", encoding="utf-8") as f:
         yaml.safe_dump(config, f, sort_keys=False)
