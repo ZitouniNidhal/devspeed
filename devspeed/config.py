@@ -41,10 +41,12 @@ def validate_config(config: Any) -> list[str]:
         return ["the file must contain a YAML object"]
 
     errors = []
-    if not config.get("project"):
-        errors.append("project is required")
-    if not config.get("stack"):
-        errors.append("stack is required")
+    project = config.get("project")
+    if not isinstance(project, str) or not project.strip():
+        errors.append("project must be a non-empty string")
+    stack = config.get("stack")
+    if not isinstance(stack, str) or not stack.strip():
+        errors.append("stack must be a non-empty string")
     if not isinstance(config.get("services"), dict):
         errors.append("services must be a YAML object")
     lifecycle = config.get("lifecycle")
