@@ -13,11 +13,13 @@ Each stack module exposes:
 from . import node_postgres_redis
 from . import fastapi_postgres
 from . import django_postgres
+from . import flask_postgres
 
 STACKS = {
     node_postgres_redis.NAME: node_postgres_redis,
     fastapi_postgres.NAME: fastapi_postgres,
     django_postgres.NAME: django_postgres,
+    flask_postgres.NAME: flask_postgres,
 }
 
 
@@ -28,5 +30,5 @@ def get_stack(name: str):
     return STACKS[name]
 
 
-def list_stacks():
+def list_stacks() -> list[tuple[str, str]]:
     return [(mod.NAME, mod.DESCRIPTION) for mod in STACKS.values()]
