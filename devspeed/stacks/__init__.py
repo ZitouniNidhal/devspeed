@@ -11,10 +11,7 @@ Each stack module exposes:
     - starter_files(config: dict) -> dict[str, str]
 """
 
-from . import node_postgres_redis
-from . import fastapi_postgres
-from . import django_postgres
-from . import flask_postgres
+from . import django_postgres, fastapi_postgres, flask_postgres, node_postgres_redis
 
 STACKS = {
     node_postgres_redis.NAME: node_postgres_redis,

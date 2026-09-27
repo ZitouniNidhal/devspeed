@@ -3,11 +3,12 @@ import pathlib
 import shutil
 import subprocess
 import sys
-from typing import Any, Mapping, Optional, Sequence
+from collections.abc import Mapping
+from typing import Any
 
 from devspeed import config as cfg
-from devspeed.stacks.common import env_example
 from devspeed.stacks import get_stack, list_stacks
+from devspeed.stacks.common import env_example
 
 GENERATED_COMPOSE = "docker-compose.devspeed.yml"
 GENERATED_ENV = ".env.devspeed"
@@ -121,6 +122,7 @@ def cmd_doctor(_args: argparse.Namespace) -> None:
             ["docker", "compose", "version"],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
+            check=False,
         )
         checks.append((result.returncode == 0, "Docker Compose v2 is available"))
 
@@ -166,6 +168,7 @@ def cmd_up(args: argparse.Namespace) -> None:
     print("  [2/2] Starting containers")
     result = subprocess.run(
         ["docker", "compose", "-f", GENERATED_COMPOSE, "up", "-d"],
+        check=False,
     )
     if result.returncode != 0:
         print("\nDocker Compose could not start the environment.")
@@ -186,7 +189,7 @@ def cmd_down(_args: argparse.Namespace) -> None:
     if not pathlib.Path(GENERATED_COMPOSE).exists():
         print("Nothing to stop — no generated compose file found. Did you run 'devspeed up'?")
         sys.exit(1)
-    result = subprocess.run(["docker", "compose", "-f", GENERATED_COMPOSE, "down"])
+    result = subprocess.run(["docker", "compose", "-f", GENERATED_COMPOSE, "down"], check=False)
     sys.exit(result.returncode)
 
 
@@ -199,7 +202,7 @@ def _require_compose_file() -> None:
 def cmd_status(_args: argparse.Namespace) -> None:
     _require_docker()
     _require_compose_file()
-    result = subprocess.run(["docker", "compose", "-f", GENERATED_COMPOSE, "ps"])
+    result = subprocess.run(["docker", "compose", "-f", GENERATED_COMPOSE, "ps"], check=False)
     sys.exit(result.returncode)
 
 
@@ -211,14 +214,16 @@ def cmd_logs(args: argparse.Namespace) -> None:
         command.append("--follow")
     if args.service:
         command.append(args.service)
-    result = subprocess.run(command)
+    result = subprocess.run(command, check=False)
     sys.exit(result.returncode)
 
 
 def cmd_cleanup(_args: argparse.Namespace) -> None:
     _require_docker()
     if pathlib.Path(GENERATED_COMPOSE).exists():
-        result = subprocess.run(["docker", "compose", "-f", GENERATED_COMPOSE, "down", "-v"])
+        result = subprocess.run(
+            ["docker", "compose", "-f", GENERATED_COMPOSE, "down", "-v"], check=False
+        )
         if result.returncode != 0:
             sys.exit(result.returncode)
         pathlib.Path(GENERATED_COMPOSE).unlink(missing_ok=True)
