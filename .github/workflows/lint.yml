@@ -1,0 +1,49 @@
+name: Linting
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  ruff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: 'pip'
+      - name: Install dependencies
+        run: pip install ruff
+      - name: Run Ruff
+        run: ruff check .
+
+  black:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: 'pip'
+      - name: Install dependencies
+        run: pip install black
+      - name: Run Black
+        run: black --check .
+
+  mypy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: 'pip'
+      - name: Install dependencies
+        run: |
+          pip install .[dev]
+      - name: Run Mypy
+        run: mypy .
