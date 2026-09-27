@@ -1,6 +1,7 @@
 """Built-in stack compatibility exports and the public plugin registry."""
 
-from devspeed.plugin import PluginRegistry, StackPlugin, builtin_registry
+from devspeed.plugins.base import StackPlugin
+from devspeed.plugins.registry import PluginRegistry, builtin_registry
 
 _REGISTRY = builtin_registry()
 

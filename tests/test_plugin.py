@@ -38,7 +38,7 @@ class PluginTests(unittest.TestCase):
 
     def test_registry_discovers_entry_point_plugin(self):
         point = type("Point", (), {"name": "example", "load": lambda _self: ExamplePlugin()})()
-        with patch("devspeed.plugin._entry_points", return_value=[point]):
+        with patch("devspeed.plugins.registry._entry_points", return_value=[point]):
             registry = PluginRegistry().discover()
         self.assertEqual(registry.get("example").description, "Example third-party stack")
 
@@ -50,6 +50,26 @@ class PluginTests(unittest.TestCase):
 
     def test_entry_point_group_is_stable(self):
         self.assertEqual(ENTRY_POINT_GROUP, "devspeed.stacks")
+
+    def test_registry_rejects_duplicate_names(self):
+        registry = PluginRegistry()
+        registry.register(ExamplePlugin())
+        with self.assertRaises(PluginError):
+            registry.register(ExamplePlugin())
+
+    def test_registry_records_broken_optional_entry_point(self):
+        point = type(
+            "Point",
+            (),
+            {
+                "name": "broken",
+                "load": lambda _self: (_ for _ in ()).throw(ImportError("missing dependency")),
+            },
+        )()
+        with patch("devspeed.plugins.registry._entry_points", return_value=[point]):
+            registry = PluginRegistry().discover()
+        self.assertEqual(registry.all(), [])
+        self.assertIn("broken: missing dependency", registry.errors)
 
 
 if __name__ == "__main__":

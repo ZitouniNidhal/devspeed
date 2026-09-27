@@ -1,4 +1,4 @@
-"""Backward-compatible imports for the pre-1.0 plugin module path."""
+"""Public plugin API for DevSpeed."""
 
 from devspeed.plugins.base import PLUGIN_API_VERSION, PluginError, StackPlugin
 from devspeed.plugins.registry import (
