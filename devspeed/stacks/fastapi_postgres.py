@@ -1,11 +1,19 @@
+from typing import Any
+
+from .common import lifecycle_command, postgres_service_yaml
+
 NAME = "fastapi-postgres"
 DESCRIPTION = "Python FastAPI API + Postgres"
 
 
-def default_config(project_name: str) -> dict:
+def default_config(project_name: str) -> dict[str, Any]:
     return {
         "project": project_name,
         "stack": NAME,
+        "lifecycle": {
+          "install": "pip install --no-cache-dir -r requirements.txt",
+          "dev": "uvicorn main:app --host 0.0.0.0 --port 8000 --reload",
+        },
         "services": {
             "app": {
                 "port": 8000,
@@ -21,7 +29,7 @@ def default_config(project_name: str) -> dict:
     }
 
 
-def starter_files(_config: dict) -> dict[str, str]:
+def starter_files(_config: dict[str, Any]) -> dict[str, str]:
     return {
         "requirements.txt": "fastapi>=0.115,<1\nuvicorn[standard]>=0.34,<1\n",
         "main.py": '''from fastapi import FastAPI
@@ -36,12 +44,18 @@ def read_root():
     }
 
 
-def compose_yaml(config: dict) -> str:
+def compose_yaml(config: dict[str, Any]) -> str:
     svc = config["services"]
     app = svc["app"]
     pg = svc["postgres"]
     project = config["project"]
 
+    app_command = lifecycle_command(
+      config,
+      "pip install --no-cache-dir -r requirements.txt",
+      f"uvicorn main:app --host 0.0.0.0 --port {app['port']} --reload",
+    )
+    postgres = postgres_service_yaml(pg, project, database_url=False)
     return f"""\
 name: {project}
 
@@ -51,7 +65,7 @@ services:
     working_dir: /app
     volumes:
       - ./:/app
-    command: sh -c "pip install --no-cache-dir -r requirements.txt && uvicorn main:app --host 0.0.0.0 --port {app['port']} --reload"
+    command: {app_command}
     ports:
       - "{app['port']}:{app['port']}"
     environment:
@@ -77,11 +91,11 @@ services:
       retries: 10
 
 volumes:
-  {project}_pgdata:
+  {postgres.split('volumes:', 1)[1]}
 """
 
 
-def env_file(config: dict) -> str:
+def env_file(config: dict[str, Any]) -> str:
     svc = config["services"]
     pg = svc["postgres"]
     return f"""\
@@ -89,7 +103,7 @@ DATABASE_URL=postgresql://{pg['user']}:{pg['password']}@localhost:{pg['port']}/{
 """
 
 
-def post_up_hints(config: dict) -> list[str]:
+def post_up_hints(config: dict[str, Any]) -> list[str]:
     app_port = config["services"]["app"]["port"]
     return [
         "App container installs from requirements.txt and runs uvicorn with --reload.",
