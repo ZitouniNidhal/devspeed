@@ -71,6 +71,17 @@ class PluginTests(unittest.TestCase):
         self.assertEqual(registry.all(), [])
         self.assertIn("broken: missing dependency", registry.errors)
 
+    def test_builtin_stack_contracts(self):
+        from devspeed.plugins.registry import builtin_registry
+        registry = builtin_registry()
+        for plugin in registry.all():
+            with self.subTest(plugin=plugin.name):
+                config = plugin.default_config("contract-test")
+                self.assertIsInstance(config, dict)
+                self.assertTrue(plugin.compose_yaml(config))
+                self.assertTrue(plugin.env_file(config))
+                self.assertIsInstance(plugin.post_up_hints(config), list)
+
 
 if __name__ == "__main__":
     unittest.main()
