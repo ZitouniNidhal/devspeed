@@ -27,7 +27,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["devspeed", "devspeed.plugins", "devspeed.stacks"]
+packages = ["devspeed", "devspeed.core", "devspeed.plugins", "devspeed.stacks"]
 
 [tool.black]
 line-length = 100
