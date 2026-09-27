@@ -3,27 +3,32 @@ import pathlib
 import shutil
 import subprocess
 import sys
+from typing import Any, Mapping, Optional, Sequence
 
 from devspeed import config as cfg
+from devspeed.stacks.common import env_example
 from devspeed.stacks import get_stack, list_stacks
 
 GENERATED_COMPOSE = "docker-compose.devspeed.yml"
 GENERATED_ENV = ".env.devspeed"
+GENERATED_ENV_EXAMPLE = ".env.example"
 
 
-def cmd_list(_args):
+def cmd_list(_args: argparse.Namespace) -> None:
     print("\ndevspeed stacks\n")
     for name, description in list_stacks():
         print(f"  {name:<24} {description}")
     print("\nStart one with: devspeed init <stack>")
 
 
-def cmd_init(args):
+def cmd_init(args: argparse.Namespace) -> None:
     project_name = args.project_name or pathlib.Path.cwd().name
-    _create_config(args.stack, project_name, args.force)
+    _create_config(args.stack, project_name, args.force, args.dry_run)
 
 
-def _create_config(stack_name, project_name, force=False):
+def _create_config(
+    stack_name: str, project_name: str, force: bool = False, dry_run: bool = False
+) -> None:
     try:
         stack = get_stack(stack_name)
     except KeyError as e:
@@ -36,14 +41,25 @@ def _create_config(stack_name, project_name, force=False):
         sys.exit(1)
 
     config = stack.default_config(project_name)
-    cfg.save_config(config)
+    if dry_run:
+        print(f"[dry-run] would write {cfg.CONFIG_FILENAME}")
+    else:
+        cfg.save_config(config)
     created_files = []
     for filename, contents in stack.starter_files(config).items():
         starter_path = pathlib.Path(filename)
         if not starter_path.exists():
-            starter_path.parent.mkdir(parents=True, exist_ok=True)
-            starter_path.write_text(contents)
+            if not dry_run:
+                starter_path.parent.mkdir(parents=True, exist_ok=True)
+                starter_path.write_text(contents, encoding="utf-8")
             created_files.append(filename)
+    example_path = pathlib.Path(GENERATED_ENV_EXAMPLE)
+    if not example_path.exists():
+        if not dry_run:
+            example_path.write_text(env_example(stack.env_file(config)), encoding="utf-8")
+        created_files.append(GENERATED_ENV_EXAMPLE)
+    if dry_run:
+        print("[dry-run] no files were written")
     print(f"\nCreated {cfg.CONFIG_FILENAME}")
     print(f"  stack   {stack.NAME}")
     print(f"  project {project_name}")
@@ -54,7 +70,7 @@ def _create_config(stack_name, project_name, force=False):
     print("  2. devspeed up       # start the environment")
 
 
-def cmd_create(args):
+def cmd_create(args: argparse.Namespace) -> None:
     print("\ndevspeed create\n")
     print("Choose a stack:")
     stacks = list_stacks()
@@ -74,17 +90,20 @@ def cmd_create(args):
         project_name = input(f"Project name [{default_name}]: ").strip() or default_name
     except EOFError:
         project_name = default_name
-    _create_config(stack_name, args.project_name or project_name, args.force)
+    _create_config(stack_name, args.project_name or project_name, args.force, args.dry_run)
 
 
-def _require_docker():
+def _require_docker() -> None:
     if shutil.which("docker") is None:
-        print("Docker CLI not found. Install Docker Desktop (or the docker engine) and make sure "
-              "'docker compose' works, then try again.")
+        print(
+            "Docker not detected. Install Docker Desktop from "
+            "https://www.docker.com/products/docker-desktop/ and make sure "
+            "'docker compose' works, then try again."
+        )
         sys.exit(1)
 
 
-def cmd_doctor(_args):
+def cmd_doctor(_args: argparse.Namespace) -> None:
     """Check the local prerequisites before a potentially noisy `up`."""
     checks = []
     try:
@@ -114,27 +133,43 @@ def cmd_doctor(_args):
     print("\nReady. Run devspeed up to start your environment.")
 
 
-def _generate_files(config: dict):
+def _generate_files(config: Mapping[str, Any], write: bool = True):
     stack = get_stack(config["stack"])
     compose_text = stack.compose_yaml(config)
     env_text = stack.env_file(config)
 
-    pathlib.Path(GENERATED_COMPOSE).write_text(compose_text)
-    pathlib.Path(GENERATED_ENV).write_text(env_text)
+    files = {
+        GENERATED_COMPOSE: compose_text,
+        GENERATED_ENV: env_text,
+        GENERATED_ENV_EXAMPLE: env_example(env_text),
+    }
+    if write:
+        for filename, contents in files.items():
+            pathlib.Path(filename).write_text(contents, encoding="utf-8")
+    else:
+        print("[dry-run] generated files:")
+        for filename, contents in files.items():
+            print(f"\n--- {filename} ---\n{contents}", end="")
     return stack
 
 
-def cmd_up(_args):
+def cmd_up(args: argparse.Namespace) -> None:
     _require_docker()
     config = cfg.load_config()
-    stack = _generate_files(config)
+    stack = _generate_files(config, write=not args.dry_run)
+    if args.dry_run:
+        print("\n[dry-run] Docker Compose was not started.")
+        return
 
-    print(f"Starting '{config['project']}' ({config['stack']}) with Docker Compose...\n")
+    print(f"Starting '{config['project']}' ({config['stack']}) with Docker Compose...")
+    print("  [1/2] Generated Compose and environment files")
+    print("  [2/2] Starting containers")
     result = subprocess.run(
         ["docker", "compose", "-f", GENERATED_COMPOSE, "up", "-d"],
     )
     if result.returncode != 0:
-        print("\ndocker compose failed to start. See output above for details.")
+        print("\nDocker Compose could not start the environment.")
+        print("Check that Docker Desktop is running and that the configured host ports are free.")
         sys.exit(result.returncode)
 
     print(f"\nCopied service URLs into {GENERATED_ENV} — copy the values you need into your app's .env.")
@@ -144,7 +179,7 @@ def cmd_up(_args):
     print("\nRun 'devspeed down' to stop, or 'devspeed cleanup' to also remove data volumes.")
 
 
-def cmd_down(_args):
+def cmd_down(_args: argparse.Namespace) -> None:
     _require_docker()
     if not pathlib.Path(GENERATED_COMPOSE).exists():
         print("Nothing to stop — no generated compose file found. Did you run 'devspeed up'?")
@@ -153,20 +188,20 @@ def cmd_down(_args):
     sys.exit(result.returncode)
 
 
-def _require_compose_file():
+def _require_compose_file() -> None:
     if not pathlib.Path(GENERATED_COMPOSE).exists():
         print("No generated Compose file found. Run 'devspeed up' first.")
         sys.exit(1)
 
 
-def cmd_status(_args):
+def cmd_status(_args: argparse.Namespace) -> None:
     _require_docker()
     _require_compose_file()
     result = subprocess.run(["docker", "compose", "-f", GENERATED_COMPOSE, "ps"])
     sys.exit(result.returncode)
 
 
-def cmd_logs(args):
+def cmd_logs(args: argparse.Namespace) -> None:
     _require_docker()
     _require_compose_file()
     command = ["docker", "compose", "-f", GENERATED_COMPOSE, "logs"]
@@ -178,7 +213,7 @@ def cmd_logs(args):
     sys.exit(result.returncode)
 
 
-def cmd_cleanup(_args):
+def cmd_cleanup(_args: argparse.Namespace) -> None:
     _require_docker()
     if pathlib.Path(GENERATED_COMPOSE).exists():
         result = subprocess.run(["docker", "compose", "-f", GENERATED_COMPOSE, "down", "-v"])
@@ -186,6 +221,7 @@ def cmd_cleanup(_args):
             sys.exit(result.returncode)
         pathlib.Path(GENERATED_COMPOSE).unlink(missing_ok=True)
     pathlib.Path(GENERATED_ENV).unlink(missing_ok=True)
+    pathlib.Path(GENERATED_ENV_EXAMPLE).unlink(missing_ok=True)
     print("Containers, volumes, and generated files removed. devspeed.yaml is left untouched.")
 
 
@@ -206,14 +242,17 @@ def build_parser():
     p_init.add_argument("stack", help="Stack template name (see 'devspeed list')")
     p_init.add_argument("--name", dest="project_name", default=None, help="Project name (default: folder name)")
     p_init.add_argument("--force", action="store_true", help="Overwrite an existing devspeed.yaml")
+    p_init.add_argument("--dry-run", action="store_true", help="Preview files without writing them")
     p_init.set_defaults(func=cmd_init)
 
     p_create = sub.add_parser("create", help="Interactively create a project environment")
     p_create.add_argument("--name", dest="project_name", default=None, help="Project name (default: folder name)")
     p_create.add_argument("--force", action="store_true", help="Overwrite an existing devspeed.yaml")
+    p_create.add_argument("--dry-run", action="store_true", help="Preview files without writing them")
     p_create.set_defaults(func=cmd_create)
 
     p_up = sub.add_parser("up", help="Generate compose files from devspeed.yaml and start everything")
+    p_up.add_argument("--dry-run", action="store_true", help="Preview generated files without starting Docker")
     p_up.set_defaults(func=cmd_up)
 
     p_down = sub.add_parser("down", help="Stop containers (keeps data volumes)")
@@ -233,7 +272,7 @@ def build_parser():
     return parser
 
 
-def main():
+def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
     args.func(args)
