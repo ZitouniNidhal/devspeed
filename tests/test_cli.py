@@ -117,6 +117,13 @@ class CliTests(unittest.TestCase):
             with self.assertRaises(SystemExit):
                 config.load_config(Path(directory))
 
+    def test_config_rejects_non_string_project_and_stack(self):
+        errors = config.validate_config(
+            {"project": 42, "stack": ["fastapi-postgres"], "services": {}}
+        )
+        self.assertIn("project must be a non-empty string", errors)
+        self.assertIn("stack must be a non-empty string", errors)
+
     def test_list_and_parser_include_dry_run(self):
         output = StringIO()
         with redirect_stdout(output):
