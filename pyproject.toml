@@ -16,6 +16,9 @@ dev = [
 [project.scripts]
 devspeed = "devspeed.cli:main"
 
+[project.entry-points."devspeed.stacks"]
+# Third-party packages publish their plugin entry points in this group.
+
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
