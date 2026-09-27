@@ -1,103 +1,87 @@
-# devspeed
+# ⚡ devspeed
 
-**Reproducible local development environments in one command.**
+**Spin up a professional local development environment in seconds.**
 
 [![Build](https://img.shields.io/github/actions/workflow/status/OWNER/devspeed/ci.yml?branch=main&label=build)](https://github.com/OWNER/devspeed/actions)
 [![PyPI](https://img.shields.io/pypi/v/devspeed.svg)](https://pypi.org/project/devspeed/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/pypi/pyversions/devspeed.svg)](https://pypi.org/project/devspeed/)
-[![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/OWNER/devspeed/main/.github/coverage.json)](https://github.com/OWNER/devspeed)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-`devspeed` turns a small, shareable `devspeed.yaml` file into a reproducible
-Docker Compose development environment. It creates starter application files,
-starts databases and caches with useful defaults, and prints the connection
-values your application needs. New contributors get a working local stack
-without copying a wiki page or debugging an afternoon of machine-specific setup.
+`devspeed` is a high-performance CLI tool that transforms a simple `devspeed.yaml` into a fully operational, reproducible Docker Compose environment. It eliminates the "it works on my machine" struggle by automating starter files, database wiring, and connection URL generation.
+
+**Stop debugging your environment. Start building your app.**
 
 ```text
-devspeed.yaml  ->  devspeed up  ->  app + dependencies + connection URLs
+devspeed.yaml  ➔  devspeed up  ➔  🚀 Ready-to-code Stack
 ```
 
-## Why devspeed?
+## ✨ Why devspeed?
 
-Docker Compose is powerful but every team ends up rebuilding the same wiring:
-ports, health checks, credentials, volumes, hot reload commands, and onboarding
-documentation. Dev Containers provide a consistent editor environment, but they
-are centered on the editor and often require a separate service definition.
-`devspeed` focuses on the smallest useful team contract: commit one readable
-YAML recipe, run one CLI command, and get a working application environment on
-Linux, macOS, or Windows.
+Docker Compose is powerful, but the "last mile" of onboarding is always painful. Teams waste hours on ports, health checks, and manual `.env` updates. 
 
-## devspeed compared
+`devspeed` provides the **missing abstraction layer**:
+- **Zero-Config Onboarding**: New developers run one command and get a working stack.
+- **Standardized Contracts**: Commit a single YAML recipe that defines the team's infrastructure.
+- **Smart Defaults**: Built-in templates for the most common stacks (FastAPI, Django, Node, etc.).
+- **Editor Agnostic**: Works perfectly whether you use VS Code, PyCharm, Vim, or a plain terminal.
 
-| Capability | devspeed | Plain Docker Compose | VS Code Dev Containers |
-| --- | --- | --- | --- |
-| Fast stack starter | Built-in templates and starter files | Build everything yourself | Usually requires a custom container definition |
-| Team configuration | One shareable `devspeed.yaml` | Compose files plus documentation | `devcontainer.json` plus Compose or Dockerfile |
-| Service dependencies | Generated databases, caches, health checks, and URLs | Manually maintained | Possible, but not the primary abstraction |
-| Editor dependence | None | None | Optimized for VS Code |
-| Customization | YAML lifecycle overrides and plugins | Full Compose flexibility | Full container flexibility |
-| Best fit | Fast, repeatable local app environments | Mature custom infrastructure | Full editor/container standardization |
+## 📊 devspeed vs. The Alternatives
 
-## Quick start
+| Capability | ⚡ devspeed | Plain Docker Compose | VS Code Dev Containers |
+| :--- | :---: | :---: | :---: |
+| **Instant Starters** | ✅ Built-in Templates | ❌ Manual Setup | ⚠️ Custom Definitions |
+| **Team Sync** | ✅ Single YAML Contract | ⚠️ Compose + Wiki | ⚠️ `.devcontainer` |
+| **Auto-Wiring** | ✅ Generated URLs/Env | ❌ Manual `.env` | ⚠️ Partial |
+| **Editor Lock-in** | ❌ None | ❌ None | ✅ VS Code Optimized |
+| **Onboarding** | 🚀 Seconds | 🐢 Hours | 🚶 Minutes |
 
-Requirements:
+## 🚀 Quick Start
 
-- Python 3.9 or newer
-- Docker Desktop with Compose v2, or a Docker Engine with `docker compose`
+### Prerequisites
+- **Python 3.9+**
+- **Docker Desktop** (with Compose v2)
 
+### Installation
 ```bash
-pip install -e .
+pip install devspeed
+```
+
+### Get Running in 30 Seconds
+```bash
+# 1. Interactively choose a stack (e.g., FastAPI + Postgres)
 devspeed create
+
+# 2. Verify your system is ready
 devspeed doctor
+
+# 3. Launch the environment
 devspeed up
 ```
 
-For explicit, scriptable setup:
-
+### Pro Workflow (Scriptable)
 ```bash
-devspeed init node-postgres-redis --name my-api
-devspeed doctor
+devspeed init fastapi-postgres --name my-awesome-api
 devspeed up
 ```
 
-Inspect generated files without writing or starting Docker:
+## 🛠️ Command Reference
 
-```bash
-devspeed up --dry-run
-```
+| Command | Description |
+| :--- | :--- |
+| `devspeed list` | Show all available stack templates |
+| `devspeed init <stack>` | Create a `devspeed.yaml` for a specific stack |
+| `devspeed up` | Generate files and start containers |
+| `devspeed doctor` | Health check for Docker and configuration |
+| `devspeed down` | Stop containers (keeps data) |
+| `devspeed cleanup` | Wipe everything (containers, volumes, generated files) |
 
-Stop services while preserving database volumes:
+## 🤝 Contributing
 
-```bash
-devspeed down
-```
+We love contributions! Whether it's a new stack template, a bug fix, or documentation improvement, please check out our [CONTRIBUTING.md](CONTRIBUTING.md).
 
-Stop services and remove generated runtime files and volumes:
-
-```bash
-devspeed cleanup
-```
-
-### Windows PowerShell
-
-If PowerShell says `devspeed` is not recognized after installation, open a new
-terminal so it reloads your Python Scripts path. You can also invoke the launcher
-directly:
-
-```powershell
-& "$env:LOCALAPPDATA\Programs\Python\Python312\Scripts\devspeed.exe" list
-```
-
-Run `devspeed init <stack>` in the project folder before `up`, `status`, or
-`logs`. Those commands read the committed `devspeed.yaml` and generated Compose
-file from the current directory.
-
-## What you get
-
-- **One configuration contract:** teammates review and commit the same YAML.
-- **Fast onboarding:** create a stack in seconds instead of copying Compose files.
+---
+*Built for developers who value their time.*
 - **Isolated dependencies:** databases and caches run in containers.
 - **Useful defaults:** health checks, hot reload, volumes, restart policies, and local URLs.
 - **Safe starters:** missing starter files are created without overwriting existing work.
