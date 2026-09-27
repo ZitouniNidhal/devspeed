@@ -71,6 +71,7 @@ Run `devspeed init <stack>` once in the project folder before `up`, `status`, or
 | `node-postgres-redis` | Node.js / Express app, PostgreSQL, Redis |
 | `fastapi-postgres` | FastAPI app, PostgreSQL |
 | `django-postgres` | Django web app, PostgreSQL |
+| `flask-postgres` | Flask API, PostgreSQL |
 
 List templates from the CLI with `devspeed list`.
 
@@ -91,6 +92,7 @@ devspeed status
 
 `devspeed.yaml` is the source of truth. `docker-compose.devspeed.yml` and
 `.env.devspeed` are generated locally and should normally be gitignored.
+`init` also creates `.env.example` with credentials masked for safe sharing.
 
 ## Example config
 
@@ -108,7 +110,15 @@ services:
     password: devspeed
   redis:
     port: 6379
+lifecycle:
+  install: npm install
+  dev: npm run dev
 ```
+
+`lifecycle.install` and `lifecycle.dev` are optional. They replace the stack's
+default install and development commands inside the app container. Preview any
+generated files without changing the working tree with `devspeed up --dry-run`
+or `devspeed init <stack> --dry-run`.
 
 The generated app container mounts your project directory, installs its
 dependencies, and runs the stack's development command. Your application can
@@ -133,12 +143,23 @@ left untouched.
 | `devspeed logs [service]` | Inspect logs, optionally for one service |
 | `devspeed cleanup` | Stop services and remove generated data |
 
+## Troubleshooting
+
+- **Docker not detected:** install [Docker Desktop](https://www.docker.com/products/docker-desktop/), restart it, and confirm `docker compose version` works.
+- **Port already in use:** change the affected service's host `port` in `devspeed.yaml`, then run `devspeed up` again.
+- **Invalid YAML:** check indentation and quote values containing `:` or special characters. `devspeed doctor` reports the exact configuration area that needs attention.
+- **Containers start but the app is unhealthy:** run `devspeed logs app` and verify the lifecycle commands and starter files match your application.
+- **Need to inspect output first:** run `devspeed up --dry-run` to review Compose and environment files without starting Docker.
+
 ## Roadmap
 
 The first release is intentionally focused on a reliable container workflow.
-Next up: more stack templates, configurable lifecycle commands, generated
-`.env.example` files, and optional local-install support for teams that cannot
-use Docker.
+Next up: optional local-install support for teams that cannot use Docker. A
+future `devspeed local-install` mode should reuse the same `devspeed.yaml`,
+validate required tools (Python/Node/Postgres/Redis), create an isolated
+`.venv` or package-manager environment, and execute the configured lifecycle
+commands on the host. It should report missing tools before changing files and
+never silently mix host services with Docker-managed services.
 
 ## Add a stack
 

@@ -7,6 +7,12 @@ dependencies = [
     "pyyaml>=6.0",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "black>=24.0",
+    "ruff>=0.6",
+]
+
 [project.scripts]
 devspeed = "devspeed.cli:main"
 
@@ -16,3 +22,10 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
 packages = ["devspeed", "devspeed.stacks"]
+
+[tool.black]
+line-length = 100
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
