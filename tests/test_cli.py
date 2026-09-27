@@ -125,6 +125,40 @@ class CliTests(unittest.TestCase):
         args = cli.build_parser().parse_args(["up", "--dry-run"])
         self.assertTrue(args.dry_run)
 
+    def test_create_wizard_writes_selected_stack(self):
+        with tempfile.TemporaryDirectory() as directory:
+            original_directory = Path.cwd()
+            os.chdir(directory)
+            try:
+                with patch("builtins.input", side_effect=["4", "wizard-api"]):
+                    cli.cmd_create(Namespace(project_name=None, force=False, dry_run=False))
+                self.assertIn("flask-postgres", Path("devspeed.yaml").read_text())
+            finally:
+                os.chdir(original_directory)
+
+    def test_doctor_and_cleanup_use_mocked_docker(self):
+        with tempfile.TemporaryDirectory() as directory:
+            original_directory = Path.cwd()
+            os.chdir(directory)
+            try:
+                config.save_config(cli.get_stack("fastapi-postgres").default_config("demo"))
+                Path(cli.GENERATED_COMPOSE).write_text("services: {}\n")
+                Path(cli.GENERATED_ENV).write_text("DATABASE_URL=example\n")
+                Path(cli.GENERATED_ENV_EXAMPLE).write_text("DATABASE_URL=example\n")
+                completed = type("Completed", (), {"returncode": 0})()
+                with (
+                    patch("devspeed.cli.shutil.which", return_value="docker"),
+                    patch("devspeed.cli.subprocess.run", return_value=completed) as run,
+                ):
+                    cli.cmd_doctor(Namespace())
+                    cli.cmd_cleanup(Namespace())
+                self.assertEqual(run.call_count, 2)
+                self.assertFalse(Path(cli.GENERATED_COMPOSE).exists())
+                self.assertFalse(Path(cli.GENERATED_ENV).exists())
+                self.assertFalse(Path(cli.GENERATED_ENV_EXAMPLE).exists())
+            finally:
+                os.chdir(original_directory)
+
 
 if __name__ == "__main__":
     unittest.main()
