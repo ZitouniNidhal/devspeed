@@ -152,7 +152,7 @@ class PluginRegistry:
         self._plugins[plugin.name] = plugin
         return plugin
 
-    def discover(self) -> "PluginRegistry":
+    def discover(self) -> PluginRegistry:
         """Load installed entry points, retaining usable plugins if one fails."""
         for point in _entry_points():
             try:

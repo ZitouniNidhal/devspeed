@@ -24,8 +24,8 @@ def list_stacks() -> list[tuple[str, str]]:
 
 
 __all__ = [
-    "PluginRegistry",
     "STACKS",
+    "PluginRegistry",
     "StackPlugin",
     "get_registry",
     "get_stack",
