@@ -62,7 +62,7 @@ def _create_config(
     if dry_run:
         print("[dry-run] no files were written")
     print(f"\n{'Previewed' if dry_run else 'Created'} {cfg.CONFIG_FILENAME}")
-    print(f"  stack   {stack.NAME}")
+    print(f"  stack   {stack.name}")
     print(f"  project {project_name}")
     if created_files:
         print(f"  starter {', '.join(created_files)}")

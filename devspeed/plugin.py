@@ -180,12 +180,7 @@ def _entry_points() -> list[EntryPoint]:
 
 def builtin_registry() -> PluginRegistry:
     """Build the default registry without requiring package installation metadata."""
-    modules = (
-        "django_postgres",
-        "fastapi_postgres",
-        "flask_postgres",
-        "node_postgres_redis",
-    )
+    modules = ("node_postgres_redis", "fastapi_postgres", "django_postgres", "flask_postgres")
     registry = PluginRegistry()
     for module_name in modules:
         module = import_module(f"devspeed.stacks.{module_name}")
