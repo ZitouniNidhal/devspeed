@@ -9,12 +9,12 @@ import yaml
 CONFIG_FILENAME = "devspeed.yaml"
 
 
-def config_path(directory: Optional[pathlib.Path] = None) -> pathlib.Path:
+def config_path(directory: Optional[pathlib.Path] = None) -> pathlib.Path:  # noqa: UP045
     directory = directory or pathlib.Path.cwd()
     return directory / CONFIG_FILENAME
 
 
-def load_config(directory: Optional[pathlib.Path] = None) -> dict[str, Any]:
+def load_config(directory: Optional[pathlib.Path] = None) -> dict[str, Any]:  # noqa: UP045
     path = config_path(directory)
     if not path.exists():
         print(f"No {CONFIG_FILENAME} found in {path.parent}. Run 'devspeed init <stack>' first.")
@@ -57,7 +57,9 @@ def validate_config(config: Any) -> list[str]:
     return errors
 
 
-def save_config(config: dict[str, Any], directory: Optional[pathlib.Path] = None) -> pathlib.Path:
+def save_config(
+    config: dict[str, Any], directory: Optional[pathlib.Path] = None  # noqa: UP045
+) -> pathlib.Path:
     path = config_path(directory)
     with path.open("w", encoding="utf-8") as f:
         yaml.safe_dump(config, f, sort_keys=False)

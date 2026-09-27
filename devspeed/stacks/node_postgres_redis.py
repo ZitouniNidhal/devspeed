@@ -122,7 +122,7 @@ REDIS_URL=redis://localhost:{svc['redis']['port']}
 def post_up_hints(config: dict[str, Any]) -> list[str]:
     app_port = config["services"]["app"]["port"]
     return [
-        f"App container will run 'npm install && npm run dev' — make sure package.json has a 'dev' script.",
+        "App container will run 'npm install && npm run dev' — make sure package.json has a 'dev' script.",
         f"API should be reachable at http://localhost:{app_port} once dependencies finish installing.",
         "Postgres and Redis are exposed on localhost too, so you can connect with any GUI client.",
     ]

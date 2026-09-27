@@ -1,14 +1,13 @@
 import os
 import tempfile
 import unittest
-from pathlib import Path
 from argparse import Namespace
 from contextlib import redirect_stdout
 from io import StringIO
+from pathlib import Path
 from unittest.mock import patch
 
-from devspeed import cli
-from devspeed import config
+from devspeed import cli, config
 
 
 class CliTests(unittest.TestCase):

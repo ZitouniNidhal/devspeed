@@ -61,5 +61,5 @@ def lifecycle_command(
     install = lifecycle.get("install", default_install)
     dev = lifecycle.get("dev", default_dev)
     if not isinstance(install, str) or not isinstance(dev, str):
-        raise ValueError("lifecycle.install and lifecycle.dev must be strings")
+        raise TypeError("lifecycle.install and lifecycle.dev must be strings")
     return f'sh -c "{install} && {dev}"'
