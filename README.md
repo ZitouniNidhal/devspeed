@@ -75,6 +75,18 @@ Run `devspeed init <stack>` once in the project folder before `up`, `status`, or
 
 List templates from the CLI with `devspeed list`.
 
+## Plugin ecosystem
+
+Stacks are discovered through the stable `StackPlugin` API and the
+`devspeed.stacks` Python entry-point group. Third-party packages can publish
+names such as `devspeed-stack-acme`, export a `plugin` instance, and become
+available after installation without changing DevSpeed source.
+
+See [the plugin authoring guide](docs/plugin-authoring.md) for the package
+layout and compatibility rules. Built-in stacks use the same registry through a
+compatibility adapter, so existing stack modules continue to work during the
+migration.
+
 ## The team workflow
 
 ```bash
@@ -153,13 +165,26 @@ left untouched.
 
 ## Roadmap
 
-The first release is intentionally focused on a reliable container workflow.
-Next up: optional local-install support for teams that cannot use Docker. A
-future `devspeed local-install` mode should reuse the same `devspeed.yaml`,
-validate required tools (Python/Node/Postgres/Redis), create an isolated
-`.venv` or package-manager environment, and execute the configured lifecycle
-commands on the host. It should report missing tools before changing files and
-never silently mix host services with Docker-managed services.
+The project roadmap is organized into Foundation, Growth, and Ecosystem phases.
+Read the [versioned roadmap](docs/ROADMAP.md) for scope, estimates, and exit
+criteria.
+
+The Foundation phase preserves existing YAML and CLI behavior while adding the
+plugin boundary. Future phases cover more stacks, a local dashboard, remote
+environments, approved team catalogs, release artifacts, and optional
+local-install support for teams that cannot use Docker.
+
+## Migration and breaking changes
+
+There is no required migration for current users. Existing `devspeed.yaml`
+files and the commands `list`, `init`, `create`, `doctor`, `up`, `down`,
+`status`, `logs`, and `cleanup` remain supported. Function-based built-in stack
+modules are adapted internally to `StackPlugin`.
+
+For plugin authors, the new stable boundary is `StackPlugin` rather than direct
+module imports. The `1.x` plugin API requires the same major API version;
+breaking API changes will use a new major version and a deprecation period for
+the adapter.
 
 ## Add a stack
 
