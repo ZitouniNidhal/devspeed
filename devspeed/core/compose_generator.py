@@ -429,8 +429,13 @@ class ComposeGenerator:
         if errors:
             LOGGER.warning("Configuration rejected before plugin resolution: %s", errors)
             raise ConfigValidationError("invalid DevSpeed configuration", errors)
+        validated_services = services
+        if not isinstance(validated_services, Mapping):
+            raise ConfigValidationError(
+                "invalid DevSpeed configuration", ["services must be a mapping"]
+            )
         copied = dict(config)
-        copied["services"] = {str(key): value for key, value in services.items()}
+        copied["services"] = {str(key): value for key, value in validated_services.items()}
         for service_name, service in copied["services"].items():
             if not service_name or not isinstance(service, Mapping):
                 errors.append(f"services.{service_name} must be a mapping")

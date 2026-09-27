@@ -22,8 +22,8 @@ def load_config(directory: Optional[pathlib.Path] = None) -> dict[str, Any]:  # 
     try:
         with path.open(encoding="utf-8") as f:
             config = yaml.safe_load(f)
-    except (OSError, yaml.YAMLError) as error:
-        print(f"Could not read {CONFIG_FILENAME}: invalid YAML ({error}).")
+    except (OSError, yaml.YAMLError) as load_error:
+        print(f"Could not read {CONFIG_FILENAME}: invalid YAML ({load_error}).")
         sys.exit(1)
 
     errors = validate_config(config)

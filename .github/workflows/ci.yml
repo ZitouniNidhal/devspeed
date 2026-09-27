@@ -23,6 +23,8 @@ jobs:
         run: python -m black --check devspeed tests
       - name: Lint
         run: python -m ruff check devspeed tests
+      - name: Type check
+        run: python -m mypy devspeed --ignore-missing-imports
       - name: Compile package
         run: python -m compileall -q devspeed
       - name: Run tests

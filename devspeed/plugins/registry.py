@@ -84,7 +84,7 @@ def _entry_points() -> list[EntryPoint]:
     discovered = entry_points()
     if hasattr(discovered, "select"):
         return list(discovered.select(group=ENTRY_POINT_GROUP))
-    return list(discovered.get(ENTRY_POINT_GROUP, []))
+    return list(discovered.get(ENTRY_POINT_GROUP, []))  # type: ignore[attr-defined]
 
 
 def _coerce_plugin(value: Any) -> StackPlugin:
