@@ -47,9 +47,7 @@ jobs:
     name: Publish to PyPI
     needs: validate
     runs-on: ubuntu-latest
-    environment:
-      name: pypi
-      url: https://pypi.org/p/devspeed
+    environment: pypi
     permissions:
       id-token: write
     steps:
