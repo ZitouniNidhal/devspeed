@@ -110,6 +110,7 @@ def builtin_registry() -> PluginRegistry:
         "fastapi_postgres",
         "django_postgres",
         "flask_postgres",
+        "nextjs_postgres",
     )
     registry = PluginRegistry()
     for module_name in module_names:
