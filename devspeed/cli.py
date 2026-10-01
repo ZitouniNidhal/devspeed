@@ -6,7 +6,7 @@ import sys
 from collections.abc import Mapping
 from typing import Any
 
-from devspeed import config as cfg
+from devspeed import __version__, config as cfg
 from devspeed.stacks import get_stack, list_stacks
 from devspeed.stacks.common import env_example
 
@@ -104,12 +104,47 @@ def _require_docker() -> None:
         sys.exit(1)
 
 
-def cmd_doctor(_args: argparse.Namespace) -> None:
+def cmd_version(_args: argparse.Namespace) -> None:
+    print(f"devspeed v{__version__}")
+
+
+def cmd_validate(_args: argparse.Namespace) -> None:
+    path = cfg.config_path()
+    if not path.exists():
+        print(f"Error: {cfg.CONFIG_FILENAME} not found.")
+        sys.exit(1)
+
+    config = cfg.load_config()
+    stack_name = config.get("stack")
+    try:
+        stack = get_stack(stack_name)
+    except KeyError as e:
+        print(f"Validation failed: {e}")
+        sys.exit(1)
+
+    print("\ndevspeed validate\n")
+    print(f"  [OK] Configuration file: {cfg.CONFIG_FILENAME}")
+    print(f"  [OK] Project name: {config['project']}")
+    print(f"  [OK] Stack plugin: {stack.name} ({stack.description})")
+
+    try:
+        stack.compose_yaml(config)
+        print("  [OK] Docker Compose rendering successful")
+    except Exception as e:
+        print(f"  [!!] Compose rendering failed: {e}")
+        sys.exit(1)
+
+    print("\nConfiguration is valid and ready for 'devspeed up'.")
+
+
+def cmd_doctor(args: argparse.Namespace) -> None:
     """Check the local prerequisites before a potentially noisy `up`."""
     checks = []
+    config = None
+    stack = None
     try:
         config = cfg.load_config()
-        get_stack(config["stack"])
+        stack = get_stack(config["stack"])
         checks.append((True, f"{cfg.CONFIG_FILENAME} is valid ({config['stack']})"))
     except (SystemExit, KeyError):
         checks.append((False, f"{cfg.CONFIG_FILENAME} is missing or invalid"))
@@ -126,6 +161,12 @@ def cmd_doctor(_args: argparse.Namespace) -> None:
         )
         checks.append((result.returncode == 0, "Docker Compose v2 is available"))
 
+    if getattr(args, "fix", False) and config and stack:
+        example_path = pathlib.Path(GENERATED_ENV_EXAMPLE)
+        if not example_path.exists():
+            example_path.write_text(env_example(stack.env_file(config)), encoding="utf-8")
+            checks.append((True, f"Repaired missing {GENERATED_ENV_EXAMPLE}"))
+
     print("\ndevspeed doctor\n")
     for passed, message in checks:
         print(f"  [{'OK' if passed else '!!'}] {message}")
@@ -133,6 +174,7 @@ def cmd_doctor(_args: argparse.Namespace) -> None:
         print("\nFix the items marked !!, then run devspeed doctor again.")
         sys.exit(1)
     print("\nReady. Run devspeed up to start your environment.")
+
 
 
 def _generate_files(config: Mapping[str, Any], write: bool = True):
@@ -237,12 +279,22 @@ def build_parser():
         prog="devspeed",
         description="Spin up a local dev environment from a single config file.",
     )
+    parser.add_argument(
+        "--version", "-v", action="version", version=f"devspeed v{__version__}"
+    )
     sub = parser.add_subparsers(dest="command", required=True)
+
+    p_version = sub.add_parser("version", help="Show devspeed CLI version")
+    p_version.set_defaults(func=cmd_version)
 
     p_list = sub.add_parser("list", help="List available stack templates")
     p_list.set_defaults(func=cmd_list)
 
+    p_validate = sub.add_parser("validate", help="Validate devspeed.yaml schema and stack setup")
+    p_validate.set_defaults(func=cmd_validate)
+
     p_doctor = sub.add_parser("doctor", help="Check Docker and the current project config")
+    p_doctor.add_argument("--fix", action="store_true", help="Auto-repair safe missing items")
     p_doctor.set_defaults(func=cmd_doctor)
 
     p_init = sub.add_parser("init", help="Create a devspeed.yaml for a stack in this directory")
