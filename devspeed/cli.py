@@ -274,6 +274,24 @@ def cmd_cleanup(_args: argparse.Namespace) -> None:
     print("Containers, volumes, and generated files removed. devspeed.yaml is left untouched.")
 
 
+def cmd_export(args: argparse.Namespace) -> None:
+    config = cfg.load_config()
+    stack = get_stack(config["stack"])
+    compose_text = stack.compose_yaml(config)
+    env_text = stack.env_file(config)
+
+    compose_out = getattr(args, "out", "docker-compose.yml") or "docker-compose.yml"
+    env_out = getattr(args, "env_out", ".env") or ".env"
+
+    pathlib.Path(compose_out).write_text(compose_text, encoding="utf-8")
+    pathlib.Path(env_out).write_text(env_text, encoding="utf-8")
+
+    print("\nExported standalone Docker Compose assets:")
+    print(f"  - Compose file: {compose_out}")
+    print(f"  - Environment file: {env_out}")
+
+
+
 def build_parser():
     parser = argparse.ArgumentParser(
         prog="devspeed",
@@ -341,6 +359,17 @@ def build_parser():
         "cleanup", help="Stop containers, delete volumes and generated files"
     )
     p_cleanup.set_defaults(func=cmd_cleanup)
+
+    p_export = sub.add_parser(
+        "export", help="Export standalone Docker Compose and environment files"
+    )
+    p_export.add_argument(
+        "--out", "-o", default="docker-compose.yml", help="Target Compose output path"
+    )
+    p_export.add_argument(
+        "--env-out", default=".env", help="Target env output path"
+    )
+    p_export.set_defaults(func=cmd_export)
 
     return parser
 

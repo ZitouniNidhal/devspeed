@@ -203,5 +203,21 @@ class CliTests(unittest.TestCase):
                 os.chdir(original_directory)
 
 
+    def test_cmd_export_writes_standalone_files(self):
+        with tempfile.TemporaryDirectory() as directory:
+            original_directory = Path.cwd()
+            os.chdir(directory)
+            try:
+                config.save_config(cli.get_stack("fastapi-postgres").default_config("export-demo"))
+                output = StringIO()
+                with redirect_stdout(output):
+                    cli.cmd_export(Namespace(out="docker-compose.yml", env_out=".env"))
+                self.assertTrue(Path("docker-compose.yml").exists())
+                self.assertTrue(Path(".env").exists())
+                self.assertIn("services:", Path("docker-compose.yml").read_text())
+            finally:
+                os.chdir(original_directory)
+
+
 if __name__ == "__main__":
     unittest.main()
