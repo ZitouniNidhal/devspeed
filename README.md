@@ -96,6 +96,8 @@ We love contributions! Whether it's a new stack template, a bug fix, or document
 | `fastapi-postgres` | FastAPI application and PostgreSQL |
 | `django-postgres` | Django web application and PostgreSQL |
 | `flask-postgres` | Flask API and PostgreSQL |
+| `nextjs-postgres` | Next.js App Router fullstack app and PostgreSQL |
+| `go-gin-postgres` | Go Gin REST API and PostgreSQL |
 
 List templates from the CLI:
 
@@ -156,15 +158,19 @@ short, deterministic, and safe to run repeatedly.
 
 | Command | Purpose |
 | --- | --- |
+| `devspeed version` | Show devspeed CLI version |
 | `devspeed list` | Browse available stack templates |
 | `devspeed init <stack>` | Create a shareable `devspeed.yaml` |
 | `devspeed create` | Choose a stack with an interactive wizard |
+| `devspeed validate` | Validate `devspeed.yaml` schema and stack configuration |
 | `devspeed doctor` | Check configuration and Docker before starting |
+| `devspeed doctor --fix` | Auto-repair safe missing setup items (e.g. `.env.example`) |
 | `devspeed up` | Generate files and start services |
 | `devspeed up --dry-run` | Preview generated files without starting Docker |
 | `devspeed down` | Stop services without deleting data |
 | `devspeed status` | Show the status of every service |
 | `devspeed logs [service]` | Inspect logs, optionally for one service |
+| `devspeed export` | Export standalone `docker-compose.yml` and `.env` files |
 | `devspeed cleanup` | Stop services, remove volumes, and remove generated outputs |
 
 ## Troubleshooting
