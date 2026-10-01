@@ -43,6 +43,7 @@ class CliTests(unittest.TestCase):
             "django-postgres",
             "flask-postgres",
             "nextjs-postgres",
+            "go-gin-postgres",
         ):
             with self.subTest(stack=stack_name):
                 stack = cli.get_stack(stack_name)
