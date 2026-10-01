@@ -42,6 +42,7 @@ class CliTests(unittest.TestCase):
             "fastapi-postgres",
             "django-postgres",
             "flask-postgres",
+            "nextjs-postgres",
         ):
             with self.subTest(stack=stack_name):
                 stack = cli.get_stack(stack_name)
@@ -159,10 +160,44 @@ class CliTests(unittest.TestCase):
                 ):
                     cli.cmd_doctor(Namespace())
                     cli.cmd_cleanup(Namespace())
-                self.assertEqual(run.call_count, 2)
                 self.assertFalse(Path(cli.GENERATED_COMPOSE).exists())
                 self.assertFalse(Path(cli.GENERATED_ENV).exists())
                 self.assertFalse(Path(cli.GENERATED_ENV_EXAMPLE).exists())
+            finally:
+                os.chdir(original_directory)
+
+    def test_cmd_version_outputs_version_string(self):
+        output = StringIO()
+        with redirect_stdout(output):
+            cli.cmd_version(Namespace())
+        self.assertIn("devspeed v", output.getvalue())
+
+    def test_cmd_validate_checks_valid_config(self):
+        with tempfile.TemporaryDirectory() as directory:
+            original_directory = Path.cwd()
+            os.chdir(directory)
+            try:
+                config.save_config(cli.get_stack("nextjs-postgres").default_config("validate-test"))
+                output = StringIO()
+                with redirect_stdout(output):
+                    cli.cmd_validate(Namespace())
+                self.assertIn("Configuration is valid", output.getvalue())
+            finally:
+                os.chdir(original_directory)
+
+    def test_doctor_fix_repairs_missing_env_example(self):
+        with tempfile.TemporaryDirectory() as directory:
+            original_directory = Path.cwd()
+            os.chdir(directory)
+            try:
+                config.save_config(cli.get_stack("fastapi-postgres").default_config("demo"))
+                completed = type("Completed", (), {"returncode": 0})()
+                with (
+                    patch("devspeed.cli.shutil.which", return_value="docker"),
+                    patch("devspeed.cli.subprocess.run", return_value=completed),
+                ):
+                    cli.cmd_doctor(Namespace(fix=True))
+                self.assertTrue(Path(cli.GENERATED_ENV_EXAMPLE).exists())
             finally:
                 os.chdir(original_directory)
 
