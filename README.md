@@ -65,39 +65,66 @@ devspeed init fastapi-postgres --name my-awesome-api
 devspeed up
 ```
 
-## 🛠️ Command Reference
-
-| Command | Description |
-| :--- | :--- |
-| `devspeed list` | Show all available stack templates |
-| `devspeed init <stack>` | Create a `devspeed.yaml` for a specific stack |
-| `devspeed up` | Generate files and start containers |
-| `devspeed doctor` | Health check for Docker and configuration |
-| `devspeed down` | Stop containers (keeps data) |
-| `devspeed cleanup` | Wipe everything (containers, volumes, generated files) |
-
-## 🤝 Contributing
-
-We love contributions! Whether it's a new stack template, a bug fix, or documentation improvement, please check out our [CONTRIBUTING.md](CONTRIBUTING.md).
-
----
-*Built for developers who value their time.*
-- **Isolated dependencies:** databases and caches run in containers.
-- **Useful defaults:** health checks, hot reload, volumes, restart policies, and local URLs.
-- **Safe starters:** missing starter files are created without overwriting existing work.
-- **Dry runs:** inspect generated Compose and environment files before changing anything.
-- **An extension point:** third-party stacks can be distributed as Python plugins.
-
-## Available stacks
+## � Available Stacks
 
 | Stack | Includes |
-| --- | --- |
+| :--- | :--- |
 | `node-postgres-redis` | Node.js / Express API, PostgreSQL, and Redis |
 | `fastapi-postgres` | FastAPI application and PostgreSQL |
 | `django-postgres` | Django web application and PostgreSQL |
 | `flask-postgres` | Flask API and PostgreSQL |
 | `nextjs-postgres` | Next.js App Router fullstack app and PostgreSQL |
 | `go-gin-postgres` | Go Gin REST API and PostgreSQL |
+
+## �🛠️ Command Reference
+
+| Command | Description |
+| :--- | :--- |
+| `devspeed list` | Show all available stack templates |
+| `devspeed init <stack>` | Create a `devspeed.yaml` for a specific stack |
+| `devspeed create` | Interactively choose and initialize a stack |
+| `devspeed up` | Generate files and start containers |
+| `devspeed doctor` | Health check for Docker and configuration |
+| `devspeed down` | Stop containers (keeps data) |
+| `devspeed cleanup` | Wipe everything (containers, volumes, generated files) |
+
+## 🧩 Advanced Capabilities
+
+`devspeed` isn't just for starters; it's a framework for environment automation.
+
+### 🔌 Plugin System
+Want a custom stack for your company's internal architecture? You can distribute your own stacks as Python plugins. 
+- **Custom Stacks:** Define your own services, volumes, and environment variables.
+- **Lifecycle Hooks:** Automate setup tasks (like database migrations) via `lifecycle.install` and `lifecycle.dev`.
+- **Extensibility:** Third-party stacks can be discovered automatically via Python entry points.
+
+### ⚙️ Customization
+The `devspeed.yaml` contract allows you to override defaults:
+- **Port Mapping:** Change default ports to avoid conflicts.
+- **Service Tuning:** Adjust resource limits or restart policies.
+- **Environment Variables:** Inject project-specific secrets and configs.
+
+## 🗺️ Roadmap & Future
+
+We are building the future of local development. Check out our [ROADMAP.md](ROADMAP.md) for the full vision, including:
+- **Local Dashboard:** A visual interface to manage your services, logs, and resource usage.
+- **Seed Data:** Built-in fixtures to populate your DBs instantly.
+- **Local-Install Mode:** Support for environments without Docker.
+- **Expanded Stack Library:** Adding Spring Boot, .NET, and more.
+
+## 🤝 Contributing
+
+We love contributions! Whether it's a new stack template, a bug fix, or documentation improvement, please check out our [CONTRIBUTING.md](CONTRIBUTING.md).
+
+**Ways to help:**
+- 🌟 **Star the repo** to show your support.
+- 🐛 **Report bugs** or request features in the Issues tab.
+- 🛠️ **Build a plugin** and share your custom stack with the community.
+- 📝 **Improve docs** to help other developers get started faster.
+
+---
+*Built for developers who value their time.*
+
 
 List templates from the CLI:
 
