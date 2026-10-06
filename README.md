@@ -122,17 +122,10 @@ We love contributions! Whether it's a new stack template, a bug fix, or document
 - 🛠️ **Build a plugin** and share your custom stack with the community.
 - 📝 **Improve docs** to help other developers get started faster.
 
----
-*Built for developers who value their time.*
+## 📖 Deep Dive & Guides
 
-
-List templates from the CLI:
-
-```bash
-devspeed list
-```
-
-## Team workflow
+### Team Workflow
+`devspeed.yaml` is the source of truth. Commit it to your repo so every teammate uses the same environment.
 
 ```bash
 # Create the project recipe once
@@ -149,15 +142,12 @@ devspeed status
 devspeed logs app
 ```
 
-`devspeed.yaml` is the source of truth. The following files are generated
-locally and should normally be ignored by Git:
-
+**Generated Files (Add to `.gitignore`):**
 - `docker-compose.devspeed.yml`
 - `.env.devspeed`
-- `.env.example` can be committed when the team wants a safe template with masked credentials.
+- `.env.example` (Can be committed as a safe template)
 
-## Example configuration
-
+### Example Configuration
 ```yaml
 project: my-api
 stack: node-postgres-redis
@@ -176,15 +166,12 @@ lifecycle:
   install: npm install
   dev: npm run dev
 ```
+`lifecycle.install` and `lifecycle.dev` are optional. They replace the stack's default commands inside the app container.
 
-`lifecycle.install` and `lifecycle.dev` are optional. They replace the stack's
-default install and development commands inside the app container. Keep commands
-short, deterministic, and safe to run repeatedly.
-
-## CLI reference
+### Full CLI Reference
 
 | Command | Purpose |
-| --- | --- |
+| :--- | :--- |
 | `devspeed version` | Show devspeed CLI version |
 | `devspeed list` | Browse available stack templates |
 | `devspeed init <stack>` | Create a shareable `devspeed.yaml` |
@@ -200,61 +187,22 @@ short, deterministic, and safe to run repeatedly.
 | `devspeed export` | Export standalone `docker-compose.yml` and `.env` files |
 | `devspeed cleanup` | Stop services, remove volumes, and remove generated outputs |
 
-## Troubleshooting
+## 🛠️ Troubleshooting
 
 ### Docker is not detected
-
-Install [Docker Desktop](https://www.docker.com/products/docker-desktop/),
-start it, and verify:
-
-```bash
-docker compose version
-```
-
-Then run `devspeed doctor` again.
+Install [Docker Desktop](https://www.docker.com/products/docker-desktop/), start it, and verify with `docker compose version`. Then run `devspeed doctor` again.
 
 ### A port is already in use
-
-Change the affected host `port` in `devspeed.yaml`, stop any old process using
-the port, and run `devspeed up` again. The app and dependency ports are host
-ports, so they must be unique on your machine.
+Change the affected host `port` in `devspeed.yaml`, stop any old process using the port, and run `devspeed up` again.
 
 ### YAML is invalid
-
-Check indentation and quote values containing `:` or special characters. Run
-`devspeed doctor` to see the configuration area that needs attention.
+Check indentation and quote values containing `:` or special characters. Run `devspeed doctor` to see the configuration area that needs attention.
 
 ### Containers start but the app is unhealthy
+Run `devspeed logs app` and verify that your lifecycle commands and expected starter files match the selected stack.
 
-Run `devspeed logs app` and verify that your lifecycle commands and expected
-starter files match the selected stack.
-
-## Plugin ecosystem
-
-Stacks are discovered through the `StackPlugin` API and the
-`devspeed.stacks` Python entry-point group. A third-party package can publish a
-name such as `devspeed-stack-acme`, export a `plugin` instance, and become
-available without modifying DevSpeed source.
-
-See [docs/plugin-authoring.md](docs/plugin-authoring.md) for the package layout
-and compatibility rules. Built-in stacks use the same registry as external
-plugins.
-
-## Roadmap
-
-See [ROADMAP.md](ROADMAP.md) for the public Now / Next / Later roadmap.
-
-## Why contribute?
-
-DevSpeed is intentionally practical: a small improvement to a stack template or
-a troubleshooting note can save every new contributor time. Read
-[CONTRIBUTING.md](CONTRIBUTING.md) and help by:
-
-- Adding and maintaining a stack template.
-- Improving documentation, examples, and onboarding instructions.
-- Reporting reproducible bugs with logs and environment details.
-- Reviewing pull requests and testing changes on another operating system.
+---
+*Built for developers who value their time.*
 
 ## License
-
 `devspeed` is released under the MIT License. See [LICENSE](LICENSE).
