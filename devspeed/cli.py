@@ -3,6 +3,7 @@ import pathlib
 import shutil
 import subprocess
 import sys
+import socket
 from collections.abc import Mapping
 from typing import Any
 
@@ -161,11 +162,44 @@ def cmd_doctor(args: argparse.Namespace) -> None:
         )
         checks.append((result.returncode == 0, "Docker Compose v2 is available"))
 
+    if config and stack:
+        # Check for stale compose file
+        compose_path = pathlib.Path(GENERATED_COMPOSE)
+        if compose_path.exists():
+            current_compose = stack.compose_yaml(config)
+            if compose_path.read_text(encoding="utf-8") != current_compose:
+                checks.append((False, f"{GENERATED_COMPOSE} is stale (out of sync with {cfg.CONFIG_FILENAME})"))
+            else:
+                checks.append((True, f"{GENERATED_COMPOSE} is up to date"))
+        else:
+            checks.append((True, f"{GENERATED_COMPOSE} will be generated on 'up'"))
+
+        # Check for port conflicts
+        port_conflict = False
+        for service, settings in config.get("services", {}).items():
+            port = settings.get("port")
+            if port:
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                    if s.connect_ex(("localhost", int(port))) == 0:
+                        checks.append((False, f"Port {port} (used by {service}) is already in use on host"))
+                        port_conflict = True
+        if not port_conflict:
+            checks.append((True, "No host port conflicts detected"))
+
     if getattr(args, "fix", False) and config and stack:
+        # Repair .env.example
         example_path = pathlib.Path(GENERATED_ENV_EXAMPLE)
         if not example_path.exists():
             example_path.write_text(env_example(stack.env_file(config)), encoding="utf-8")
             checks.append((True, f"Repaired missing {GENERATED_ENV_EXAMPLE}"))
+        
+        # Repair stale compose file
+        compose_path = pathlib.Path(GENERATED_COMPOSE)
+        if compose_path.exists():
+            current_compose = stack.compose_yaml(config)
+            if compose_path.read_text(encoding="utf-8") != current_compose:
+                compose_path.write_text(current_compose, encoding="utf-8")
+                checks.append((True, f"Updated stale {GENERATED_COMPOSE}"))
 
     print("\ndevspeed doctor\n")
     for passed, message in checks:
