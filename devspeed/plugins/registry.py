@@ -104,15 +104,15 @@ def _coerce_plugin(value: Any) -> StackPlugin:
 
 
 def builtin_registry() -> PluginRegistry:
-    """Create the default registry from the built-in concrete stack classes."""
-    module_names = (
-        "node_postgres_redis",
-        "fastapi_postgres",
-        "django_postgres",
-        "flask_postgres",
-        "nextjs_postgres",
-        "go_gin_postgres",
-    )
+    """Return a registry pre-loaded with built-in stack plugins.
+
+    Built-ins are imported explicitly to ensure they are always available
+    without relying on entry-point discovery.
+    """
+    registry = PluginRegistry()
+    from devspeed.stacks.django_postgres import DjangoPostgresStack
+    from devspeed.stacks.fastapi_postgres import FastAPIPostgresStack
+    from devspeed.stacks.flask_postgres import FlaskPostgresStack
     registry = PluginRegistry()
     for module_name in module_names:
         module = import_module(f"devspeed.stacks.{module_name}")
