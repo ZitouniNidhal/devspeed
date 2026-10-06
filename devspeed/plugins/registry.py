@@ -113,11 +113,19 @@ def builtin_registry() -> PluginRegistry:
     from devspeed.stacks.django_postgres import DjangoPostgresStack
     from devspeed.stacks.fastapi_postgres import FastAPIPostgresStack
     from devspeed.stacks.flask_postgres import FlaskPostgresStack
-    registry = PluginRegistry()
-    for module_name in module_names:
-        module = import_module(f"devspeed.stacks.{module_name}")
-        registry.register(_coerce_plugin(module.plugin))
-    return registry.discover()
+    from devspeed.stacks.go_gin_postgres import GoGinPostgresStack
+    from devspeed.stacks.nextjs_postgres import NextJsPostgresStack
+    from devspeed.stacks.node_postgres_redis import NodePostgresRedisStack
+    from devspeed.stacks.spring_boot_postgres import SpringBootPostgresStack
+
+    registry.register(DjangoPostgresStack())
+    registry.register(FastAPIPostgresStack())
+    registry.register(FlaskPostgresStack())
+    registry.register(GoGinPostgresStack())
+    registry.register(NextJsPostgresStack())
+    registry.register(NodePostgresRedisStack())
+    registry.register(SpringBootPostgresStack())
+    return registry
 
 
 def discover_pypi_stack_packages(timeout: float = 5.0) -> list[str]:

@@ -75,6 +75,7 @@ devspeed up
 | `flask-postgres` | Flask API and PostgreSQL |
 | `nextjs-postgres` | Next.js App Router fullstack app and PostgreSQL |
 | `go-gin-postgres` | Go Gin REST API and PostgreSQL |
+| `spring-boot-postgres` | Spring Boot application and PostgreSQL |
 
 ## �🛠️ Command Reference
 
