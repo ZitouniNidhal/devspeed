@@ -3,4 +3,11 @@ Name: devspeed
 Version: 0.1.0
 Summary: Lightning-fast local dev environment manager
 Requires-Python: >=3.9
+License-File: LICENSE
 Requires-Dist: pyyaml>=6.0
+Provides-Extra: dev
+Requires-Dist: black>=24.0; extra == "dev"
+Requires-Dist: build>=1.2; extra == "dev"
+Requires-Dist: mypy>=1.10; extra == "dev"
+Requires-Dist: ruff>=0.6; extra == "dev"
+Dynamic: license-file

@@ -1,2 +1,8 @@
 [console_scripts]
 devspeed = devspeed.cli:main
+
+[devspeed.stacks]
+django-postgres = devspeed.stacks.django_postgres:plugin
+fastapi-postgres = devspeed.stacks.fastapi_postgres:plugin
+flask-postgres = devspeed.stacks.flask_postgres:plugin
+node-postgres-redis = devspeed.stacks.node_postgres_redis:plugin
