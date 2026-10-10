@@ -1,13 +1,14 @@
 import argparse
 import pathlib
 import shutil
+import socket
 import subprocess
 import sys
-import socket
 from collections.abc import Mapping
 from typing import Any
 
-from devspeed import __version__, config as cfg
+from devspeed import __version__
+from devspeed import config as cfg
 from devspeed.stacks import get_stack, list_stacks
 from devspeed.stacks.common import env_example
 
@@ -131,7 +132,7 @@ def cmd_validate(_args: argparse.Namespace) -> None:
     try:
         stack.compose_yaml(config)
         print("  [OK] Docker Compose rendering successful")
-    except Exception as e:
+    except (TypeError, KeyError, ValueError, RuntimeError) as e:
         print(f"  [!!] Compose rendering failed: {e}")
         sys.exit(1)
 

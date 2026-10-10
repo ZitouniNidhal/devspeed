@@ -7,7 +7,6 @@ import urllib.parse
 import urllib.request
 from collections.abc import Callable
 from html.parser import HTMLParser
-from importlib import import_module
 from importlib.metadata import EntryPoint, entry_points
 from typing import Any
 
@@ -110,21 +109,21 @@ def builtin_registry() -> PluginRegistry:
     without relying on entry-point discovery.
     """
     registry = PluginRegistry()
-    from devspeed.stacks.django_postgres import DjangoPostgresStack
-    from devspeed.stacks.fastapi_postgres import FastAPIPostgresStack
-    from devspeed.stacks.flask_postgres import FlaskPostgresStack
-    from devspeed.stacks.go_gin_postgres import GoGinPostgresStack
-    from devspeed.stacks.nextjs_postgres import NextJsPostgresStack
-    from devspeed.stacks.node_postgres_redis import NodePostgresRedisStack
-    from devspeed.stacks.spring_boot_postgres import SpringBootPostgresStack
+    from devspeed.stacks.django_postgres import DjangoPostgresPlugin
+    from devspeed.stacks.fastapi_postgres import FastAPIPostgresPlugin
+    from devspeed.stacks.flask_postgres import FlaskPostgresPlugin
+    from devspeed.stacks.go_gin_postgres import GoGinPostgresPlugin
+    from devspeed.stacks.nextjs_postgres import NextjsPostgresPlugin
+    from devspeed.stacks.node_postgres_redis import NodePostgresRedisPlugin
+    from devspeed.stacks.spring_boot_postgres import SpringBootPostgresPlugin
 
-    registry.register(DjangoPostgresStack())
-    registry.register(FastAPIPostgresStack())
-    registry.register(FlaskPostgresStack())
-    registry.register(GoGinPostgresStack())
-    registry.register(NextJsPostgresStack())
-    registry.register(NodePostgresRedisStack())
-    registry.register(SpringBootPostgresStack())
+    registry.register(DjangoPostgresPlugin())
+    registry.register(FastAPIPostgresPlugin())
+    registry.register(FlaskPostgresPlugin())
+    registry.register(GoGinPostgresPlugin())
+    registry.register(NextjsPostgresPlugin())
+    registry.register(NodePostgresRedisPlugin())
+    registry.register(SpringBootPostgresPlugin())
     return registry
 
 

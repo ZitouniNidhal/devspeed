@@ -3,17 +3,24 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
+from devspeed.plugins.base import StackPlugin
 from devspeed.stacks.common import lifecycle_command, postgres_service_yaml
 
 
-class SpringBootPostgresStack:
+class SpringBootPostgresPlugin(StackPlugin):
     """Spring Boot application with a PostgreSQL database."""
-    name = "spring-boot-postgres"
-    description = "Spring Boot application and PostgreSQL"
 
-    def default_config(self, project: str) -> Mapping[str, Any]:
+    @property
+    def name(self) -> str:
+        return "spring-boot-postgres"
+
+    @property
+    def description(self) -> str:
+        return "Spring Boot application and PostgreSQL"
+
+    def default_config(self, project_name: str) -> dict[str, Any]:
         return {
-            "project": project,
+            "project": project_name,
             "stack": self.name,
             "services": {
                 "app": {
@@ -23,8 +30,8 @@ class SpringBootPostgresStack:
                 "postgres": {
                     "port": 5432,
                     "db": "springdb",
-                    "user": "springuser",
-                    "password": "springpassword",
+                    "user": "devspeed",
+                    "password": "devspeed",
                 },
             },
             "lifecycle": {
@@ -38,8 +45,9 @@ class SpringBootPostgresStack:
         app = config["services"]["app"]
         postgres = config["services"]["postgres"]
 
-        return f"""
-version: "3.8"
+        return f"""\
+name: {project}
+
 services:
   app:
     image: eclipse-temurin:21-jdk-alpine
@@ -65,7 +73,7 @@ services:
             f"SPRING_DATASOURCE_PASSWORD={postgres['password']}\n"
         )
 
-    def starter_files(self, config: Mapping[str, Any]) -> Mapping[str, str]:
+    def starter_files(self, config: Mapping[str, Any]) -> dict[str, str]:
         return {}
 
     def post_up_hints(self, config: Mapping[str, Any]) -> list[str]:
@@ -74,3 +82,30 @@ services:
             "Database is available at localhost:5432",
             "Check logs with 'devspeed logs app'",
         ]
+
+
+plugin = SpringBootPostgresPlugin()
+SpringBootPostgresStack = SpringBootPostgresPlugin
+NAME = plugin.name
+DESCRIPTION = plugin.description
+
+
+def default_config(project_name: str) -> dict[str, Any]:
+    return plugin.default_config(project_name)
+
+
+def starter_files(config: Mapping[str, Any]) -> dict[str, str]:
+    return plugin.starter_files(config)
+
+
+def compose_yaml(config: Mapping[str, Any]) -> str:
+    return plugin.compose_yaml(config)
+
+
+def env_file(config: Mapping[str, Any]) -> str:
+    return plugin.env_file(config)
+
+
+def post_up_hints(config: Mapping[str, Any]) -> list[str]:
+    return plugin.post_up_hints(config)
+
