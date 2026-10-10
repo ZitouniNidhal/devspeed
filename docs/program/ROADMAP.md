@@ -13,7 +13,7 @@
 | Phase | Status | Notes |
 | --- | --- | --- |
 | Phase 1 audit | Done | Full repo read, config review, baseline validation, and backlog creation completed. |
-| Phase 1 foundation | Blocked | Requires approval before making repo hygiene and CI fixes. |
+| Phase 1 foundation | In progress | CI/CD workflow has been expanded with coverage, build, and dependency-audit stages; repo hygiene and Python floor alignment remain next. |
 | Phase 2 config contract | Todo | Schema validation and `devspeed validate` work begins after hygiene and compatibility baseline. |
 | Phase 3 roadmap features | Todo | Deferred until the core contract and toolchain are stabilized. |
 | Phase 4 DX and profiles | Todo | Deferred until after reliability and config work. |
@@ -28,8 +28,14 @@
 
 ## Planned next actions
 
-1. Fix repository hygiene (ignore caches and generated artifacts; remove committed `devspeed.egg-info` from version control).
+1. Finalize repo hygiene (ignore caches and generated artifacts; remove committed `devspeed.egg-info` from version control).
 2. Set the Python support policy to 3.10+ and update metadata/docs accordingly.
 3. Make lint/format/type checks pass in the project baseline.
 4. Re-run CI-focused checks and lock the metrics baseline.
 5. Only then start Phase 1 implementation work.
+
+## Current CI/CD expansion
+
+- Consolidated the primary GitHub Actions pipeline into a stronger quality gate with concurrency and artifact uploads.
+- Added coverage reporting, build validation, and dependency-audit stages.
+- Kept the functional test matrix across Linux/macOS/Windows and common Python versions while preserving the existing stack smoke coverage.
